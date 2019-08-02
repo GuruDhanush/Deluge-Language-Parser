@@ -21,5 +21,7 @@ steps:
     displayName: 'Unit test'
   - script: 
       /usr/lib/dart/bin/pub global activate dart_coveralls 
-      /usr/lib/dart/bin/pub global run dart_coveralls report test/all_test.dart
-    displayName: 'Coverage report'
+    displayName: 'activate coverall'
+  - script: 
+      /usr/lib/dart/bin/pub global run dart_coveralls report ./test/all_test.dart
+    displayName: 'report coverage'
