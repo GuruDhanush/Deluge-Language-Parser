@@ -14,12 +14,12 @@ steps:
       sudo apt-get install dart
     displayName: 'Install sdk'
   - script: 
-      $BUILD_SOURCESDIRECTORY/dart-sdk/bin/pub get 
+      /usr/lib/dart/bin/pub get 
     displayName: 'Pub get'    
   - script: 
-      $BUILD_SOURCESDIRECTORY/dart-sdk/bin/pub run test ./test/all_test.dart --platform vm
+      /usr/lib/dart/bin/pub run test ./test/all_test.dart --platform vm
     displayName: 'Unit test'
   - script: 
-      $BUILD_SOURCESDIRECTORY/dart-sdk/bin/pub global activate dart_coveralls 
-      $BUILD_SOURCESDIRECTORY/dart-sdk/bin/pub global run dart_coveralls report test/all_test.dart
+      /usr/lib/dart/bin/pub global activate dart_coveralls 
+      /usr/lib/dart/bin/pub global run dart_coveralls report test/all_test.dart
     displayName: 'Coverage report'
