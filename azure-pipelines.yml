@@ -10,15 +10,16 @@ steps:
       sudo sh -c 'curl https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_stable.list > /etc/apt/sources.list.d/dart_stable.list'
     displayName: 'Setup sdk'
   - script: |
+      sudo apt-get update
       sudo apt-get install dart
     displayName: 'Install sdk'
   - script: 
-      $BUILD_SOURCESDIRECTORY/dart-sdk/bin/pub.bat get 
+      $BUILD_SOURCESDIRECTORY/dart-sdk/bin/pub get 
     displayName: 'Pub get'    
   - script: 
-      $BUILD_SOURCESDIRECTORY/dart-sdk/bin/pub.bat run test .\test\all_test.dart --platform vm
+      $BUILD_SOURCESDIRECTORY/dart-sdk/bin/pub run test ./test/all_test.dart --platform vm
     displayName: 'Unit test'
   - script: 
-      $BUILD_SOURCESDIRECTORY/dart-sdk/bin/pub.bat global activate dart_coveralls 
-      $BUILD_SOURCESDIRECTORY/dart-sdk/bin/pub.bat global run dart_coveralls report test/all_test.dart
+      $BUILD_SOURCESDIRECTORY/dart-sdk/bin/pub global activate dart_coveralls 
+      $BUILD_SOURCESDIRECTORY/dart-sdk/bin/pub global run dart_coveralls report test/all_test.dart
     displayName: 'Coverage report'
