@@ -9,6 +9,8 @@ environment:
 
 dependencies:
   petitparser: ^2.4.0
+  graphs: ^0.2.0
+
 
 dev_dependencies:
   pedantic: ^1.0.0
