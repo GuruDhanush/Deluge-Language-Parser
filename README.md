@@ -1,6 +1,7 @@
 # Deluge language parser
 
-[![Build Status](https://travis-ci.org/GuruDhanush/Deluge-Language-Parser.svg?branch=master)](https://travis-ci.org/GuruDhanush/Deluge-Language-Parser) 
+[![Build Status](https://travis-ci.org/GuruDhanush/Deluge-Language-Parser.svg?branch=master)](https://travis-ci.org/GuruDhanush/Deluge-Language-Parser)
+[![Build Status](https://dev.azure.com/guruzoho/flutter-winui/_apis/build/status/GuruDhanush.Deluge-Language-Parser?branchName=master)](https://dev.azure.com/guruzoho/flutter-winui/_build/latest?definitionId=2&branchName=master)
 [![Coverage Status](https://coveralls.io/repos/github/GuruDhanush/Deluge-Language-Parser/badge.svg?branch=master)](https://coveralls.io/github/GuruDhanush/Deluge-Language-Parser?branch=master)
 
 
