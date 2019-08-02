@@ -2,7 +2,7 @@ name: DelugeDartParser
 description: Deluge lang parser in dart.
 # version: 0.0.1
 # homepage: https://gurudhanush.github.io
-# author: Guru <gurudhanush@outlook.com>
+# author: Guru 
 
 environment:
   sdk: '>=2.2.0 <3.0.0'
