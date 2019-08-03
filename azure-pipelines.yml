@@ -1,8 +1,3 @@
-variables:
-  CI_BUILD_URL: $(Build.BuildUri)
-  CI_BRANCH: $(Build.SourceBranchName)
-  CI_BUILD_NUMBER: $(Build.BuildNumber)
-  CI: true
 
 trigger:
 - master
@@ -25,9 +20,9 @@ steps:
   - script: 
       /usr/lib/dart/bin/pub run test ./test/all_test.dart --platform vm
     displayName: 'Unit test'
-  - script: 
-      /usr/lib/dart/bin/pub global activate dart_coveralls 
-    displayName: 'activate coverall'
-  - script: 
-      /usr/lib/dart/bin/pub global run dart_coveralls report ./test/all_test.dart --token $(COVERALLSKEY)
-    displayName: 'report coverage'
+  - script: |
+      /usr/lib/dart/bin/pub global activate test_coverage  
+      /usr/lib/dart/bin/pub global run test_coverage --exclude "test/all_test.dart"
+      bash <(curl -s https://codecov.io/bash) -t $(CODECOV_TOKEN)
+    displayName: 'test coverage'
+ 
