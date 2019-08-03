@@ -23,5 +23,5 @@ steps:
       /usr/lib/dart/bin/pub global activate dart_coveralls 
     displayName: 'activate coverall'
   - script: 
-      /usr/lib/dart/bin/pub global run dart_coveralls report ./test/all_test.dart
+      /usr/lib/dart/bin/pub global run dart_coveralls report ./test/all_test.dart --token $COVERALLSKEY
     displayName: 'report coverage'
