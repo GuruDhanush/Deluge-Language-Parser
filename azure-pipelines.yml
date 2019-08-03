@@ -1,3 +1,9 @@
+variables:
+  CI_BUILD_URL: $(Build.BuildUri)
+  CI_BRANCH: $(Build.SourceBranchName)
+  CI_BUILD_NUMBER: $(Build.BuildNumber)
+  CI: true
+
 trigger:
 - master
 
