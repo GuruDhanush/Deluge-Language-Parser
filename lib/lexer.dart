@@ -38,14 +38,15 @@ class DgGrammarDef extends GrammarDefinition {
   Parser methodOrProp() => (ref(token, '.') & ref(identifier)) | ref(parmas);
   //Parser assignmentExpression() => ref()
 
-  //TODO: Implement a strict version of params. 
+  //TODO: Implement a strict version of params.
   //An strict version of param identifier is difficult to parse, so the lenient version
-  //may or maynot accept ',' between the params. 
+  //may or maynot accept ',' between the params.
   Parser parmas() =>
       ref(token, '(') &
-      (ref(arithmeticExpression) & ref(token, ',').optional()).star() &
+      ((ref(callExpression) | ref(memberExpression) | ref(binaryExpression)) &
+              ref(token, ',').optional())
+          .star() &
       ref(token, ')');
-
 
   Parser singleParam() =>
       ref(decimalLiteral) |
@@ -56,19 +57,38 @@ class DgGrammarDef extends GrammarDefinition {
       ref(bracketParam);
 
   Parser bracketParam() =>
-      ref(token, '(') & ref(arithmeticExpression) & ref(token, ')');
+      ref(token, '(') & ref(binaryExpression) & ref(token, ')');
 
-  Parser arithmeticExpression() =>
-      ref(singleParam) & (ref(arithemticOperator) & ref(singleParam)).star();
-  
-  Parser callExpression() => (ref(memberExpression) | ref(arithmeticExpression))  & ref(parmas);
+  //TODO: Fix the call & member expressions in binary expression. 
+  //binary expression fails on tackling call expression or member expression as its left and right
+  //adding those leads to stack overflow. 
+  Parser binaryExpression() =>
+     (ref(singleParam))  &
+      ((ref(arithemticOperator) |
+                  ref(equalityOperator) |
+                  ref(relationalOperator)) &
+              (ref(singleParam)))
+          .star();
 
-  Parser memberExpression() => ref(arithmeticExpression) & ref(token, '.') & ref(arithmeticExpression);
+  Parser logicalExpression() =>
+      ref(binaryExpression) & (ref(conditionalOperator) & ref(binaryExpression)).star();
+
+  Parser callExpression() =>
+      (ref(memberExpression) | ref(binaryExpression)) & ref(parmas);
+
+  Parser memberExpression() =>
+      ref(binaryExpression) & ref(token, '.') & ref(binaryExpression);
+
+  Parser assignmentExpression() =>
+      (ref(memberExpression) | ref(identifier)) &
+      ref(assignmentOperator) &
+      (ref(callExpression) | ref(memberExpression) | ref(binaryExpression)) &
+      ref(token, ';');
 
   Parser decimalLiteral() => ref(token, DECIMAL);
   Parser bigintLiteral() => ref(token, BIGINT);
   Parser stringLiteral() => ref(token, STRING);
-  Parser booleanLiteral() => ref(token, BOOLEAN);
+  Parser booleanLiteral() => ref(BOOLEAN);
 
   Parser identifier() => ref(token, IDENTIFIER);
 
@@ -125,7 +145,7 @@ class DgGrammarDef extends GrammarDefinition {
   Parser prefixOperator() => ref(token, '+') | ref(token, '-');
 
   Parser relationalOperator() =>
-      ref(token, '>') | ref(token, '>=') | ref(token, '<') | ref(token, '<=');
+      ref(token, '>=') | ref(token, '>') | ref(token, '<=') | ref(token, '<');
 
   Parser conditionalOperator() => ref(token, '&&') | ref(token, '||');
   Parser prefixConditionalOperator() => ref(token, '!');
@@ -151,6 +171,7 @@ class DgGrammarDef extends GrammarDefinition {
   Parser SENDMAIL() => ref(token, 'sendemail');
 
   //TODO: Know whether the deluge has  no first digit rule.
+  // It always will be  ¯\_(ツ)_/¯ .
   Parser IDENTIFIER() => ((ref(LETTER) | char('_')) //no digit before
           &
           (ref(LETTER) | ref(DIGIT) | char('_')).star())

@@ -33,6 +33,37 @@ void main() {
     });
   });
 
+  group('multi line comment', () {
+
+    Parser parser;
+    setUp((){
+      parser = dg.build(start: dg.MULTILINE_COMMENT);
+    });
+
+    test('normal', () {
+      var input = '/* Hello  */';
+      var result = parser.parse(input);
+      assert(result.isSuccess);
+      expect('/', result.value[0]);
+      expect('*', result.value[1]);
+      expect(input.length-4, result.value[2].length);
+      expect('*', result.value[3]);
+      expect('/', result.value[4]);
+    });
+    
+    
+    test('with new lines', () {
+      var input = '/* Hello \n  Hi \n Bye  */';
+      var result = parser.parse(input);
+      assert(result.isSuccess);
+      expect('/', result.value[0]);
+      expect('*', result.value[1]);
+      expect(input.length-4, result.value[2].length);
+      expect('*', result.value[3]);
+      expect('/', result.value[4]);
+    });
+  });
+  
   group("string", () {
     Parser parser;
 
@@ -135,6 +166,26 @@ void main() {
     });
   });
 
+  group('boolean', () {
+    
+    Parser parser;
+    setUp((){
+      parser = dg.build(start: dg.booleanLiteral);
+    });
+
+    test('true', (){
+      var result = parser.parse('true');
+      expect(true, result.isSuccess);
+      expect('true', result.value.value);
+    });
+
+    test('false', (){
+      var result = parser.parse('false');
+      expect(true, result.isSuccess);
+      expect('false', result.value.value);
+    });
+    
+  });
   group("identifier", () {
     Parser parser;
 
@@ -245,62 +296,77 @@ void main() {
     });
   });
 
-  group('arithemtic', () {
-    test('addition', () {
-      Parser parser = dg.build(start: dg.arithmeticExpression);
+  group('binary expression', () {
+
+    Parser parser;
+    setUp((){
+      parser = dg.build(start: dg.binaryExpression);
+    });
+
+  test('addition', () {
       var result = parser.parse('1+2');
       assert(result.isSuccess);
       print(result.value);
-    });
+    },tags: 'flaky');
 
     test('substraction', () {
-      Parser parser = dg.build(start: dg.arithmeticExpression);
       var result = parser.parse('1-2');
       assert(result.isSuccess);
       print(result.value);
-    });
+    },tags: 'flaky');
 
     test('add+sub', () {
-      Parser parser = dg.build(start: dg.arithmeticExpression);
       var result = parser.parse('1+2-3');
       assert(result.isSuccess);
       print(result.value);
-    });
+    },tags: 'flaky');
 
     test("multiply", () {
-      Parser parser = dg.build(start: dg.arithmeticExpression);
       var result = parser.parse('1+2-3*4');
       assert(result.isSuccess);
       print(result.value);
-    });
+    },tags: 'flaky');
 
     test('division', () {
-      Parser parser = dg.build(start: dg.arithmeticExpression);
       var result = parser.parse('1+2-3*4/5');
       assert(result.isSuccess);
       print(result.value);
-    });
+    },tags: 'flaky');
 
     test('mod', () {
-      Parser parser = dg.build(start: dg.arithmeticExpression);
       var result = parser.parse('1+2-3*4/5%6');
       assert(result.isSuccess);
       print(result.value);
-    });
+    },tags: 'flaky');
 
     test('brackets', () {
-      Parser parser = dg.build(start: dg.arithmeticExpression);
 //      var result = parser.parse('(1+2)-(3*4)/(5%6)');
       var result = parser.parse('(1+2)');
       assert(result.isSuccess);
       print(result.value);
-    });
+    },tags: 'flaky');
 
     test('identifiers', () {
-      Parser parser = dg.build(start: dg.arithmeticExpression);
       var result = parser.parse('a.len() + b.len() + 3');
       assert(result.isSuccess);
       print(result.value);
+    },tags: 'flaky');
+
+    test('equality', (){
+      var result = parser.parse('1 == 2');
+      assert(result.isSuccess);
+
+      expect(1, result.value[0].value);
+      expect('==', result.value[1][0][0].value);
+      expect(2, result.value[1][0][1].value);
+    });
+
+    test('relational', () {
+      var result = parser.parse('1 <= 2');
+      assert(result.isSuccess);
+      expect(1, result.value[0].value);
+      expect('<=', result.value[1][0][0].value);
+      expect(2, result.value[1][0][1].value);    
     });
   });
 
@@ -357,5 +423,145 @@ void main() {
       expect('length', result.value[2][0].value);
 
     });
+  });
+
+  group('object expression', (){
+
+
+  });
+
+  group('Assignment expression', () {
+    
+    Parser parser;
+    setUp((){
+      parser = dg.build(start: dg.assignmentExpression);
+    });
+
+    test('identifier = identifer', () {
+      
+      var result = parser.parse('hello = hi;');
+      expect(true, result.isSuccess);
+      expect('hello', result.value[0].value);
+      expect('=', result.value[1].value);
+      expect('hi', result.value[2][0].value);
+      expect(';', result.value[3].value);
+    });
+
+    test('identifier = literal (int)', () {
+      
+      var result = parser.parse('hello = 12;');
+      expect(true, result.isSuccess);
+      expect('hello', result.value[0].value);
+      expect('=', result.value[1].value);
+      expect(12, result.value[2][0].value);
+      expect(';', result.value[3].value);
+    
+    });
+
+    test('identifier = literal (decimal)', () {
+      
+      var result = parser.parse('hello = 1.2;');
+      expect(true, result.isSuccess);
+      expect('hello', result.value[0].value);
+      expect('=', result.value[1].value);
+      expect(1.2, result.value[2][0].value);
+      expect(';', result.value[3].value);
+    
+    });
+
+    test('identifier = literal (string)', () {
+      
+      var result = parser.parse('hello = "hi";');
+      expect(true, result.isSuccess);
+      expect('hello', result.value[0].value);
+      expect('=', result.value[1].value);
+      expect('hi'.split(''), result.value[2][0].value);
+      expect(';', result.value[3].value);
+    
+    });
+
+    test('identifier = literal (bool)', () {
+      
+      var result = parser.parse('hello = true;');
+      expect(true, result.isSuccess);
+      expect('hello', result.value[0].value);
+      expect('=', result.value[1].value);
+      expect('true', result.value[2][0].value);
+      expect(';', result.value[3].value);
+    
+    });
+
+    test('increment by 1', (){
+      var result = parser.parse('i +=1;');
+
+      expect(true, result.isSuccess);
+      expect('i', result.value[0].value);
+      expect('+=', result.value[1].value);
+      expect(1, result.value[2][0].value);
+      expect(';', result.value[3].value);
+    });
+
+    test('increment with an member expression', () {
+      
+      var result = parser.parse('i += list.length;');
+
+      expect(true, result.isSuccess);
+      expect('i', result.value[0].value);
+      expect('+=', result.value[1].value);
+      expect('list', result.value[2][0][0].value);
+      expect('length', result.value[2][2][0].value);
+      expect(';', result.value[3].value);
+
+    });
+
+    test('increment with an call expression', () {
+      
+      var result = parser.parse('i += list.get(1);');
+
+      expect(true, result.isSuccess);
+      expect('i', result.value[0].value);
+      expect('+=', result.value[1].value);
+      expect('list', result.value[2][0][0][0].value);
+      expect('get', result.value[2][0][2][0].value);
+      expect(1, result.value[2][1][1][0][0][0].value);
+      expect(';', result.value[3].value);
+
+    });
+
+  });
+
+  group('Logical expression ', () {
+
+    Parser parser;
+    setUp((){
+      parser = dg.build(start: dg.logicalExpression);
+    });
+
+    test('identifier && identifer', () {
+      var result = parser.parse('a && b');
+
+      assert(result.isSuccess);
+      expect('a', result.value[0][0].value);
+      expect('&&', result.value[1][0][0].value);
+      expect('b', result.value[1][0][1][0].value);
+    });
+
+    
+    test('int || int', () {
+      var result = parser.parse('1 || 2');
+
+      assert(result.isSuccess);
+      expect(1, result.value[0][0].value);
+      expect('||', result.value[1][0][0].value);
+      expect(2, result.value[1][0][1][0].value);
+    });
+
+    test('member expression || call expression', () {
+      var result = parser.parse('map.length && map.get()');
+
+      assert(result.isSuccess);
+      
+    });
+
   });
 }

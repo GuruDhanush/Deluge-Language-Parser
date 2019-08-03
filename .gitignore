@@ -9,6 +9,7 @@ pubspec.lock
 
 # file by test_coverage
 test/.test_coverage.dart
+coverage/
 
 # Conventional directory for build outputs
 build/

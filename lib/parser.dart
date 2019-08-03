@@ -28,9 +28,9 @@ class DelugeParserDefinition extends DgGrammarDef {
       .map((id) => StringLiteral(value: id.value, raw: id.input));
 
   Parser booleanLiteral() => super.booleanLiteral().map(
-      (id) => BooleanLiteral(value: id.value.value == 'true', raw: id.input));
+      (id) => BooleanLiteral(value: id.value == 'true', raw: id.input));
 
-  Parser arithmeticExpression() => super.arithmeticExpression().map((id) {
+  Parser binaryExpression() => super.binaryExpression().map((id) {
         var _tmpList = id[1];
 
         //case where we get an binary expression and next tokens tend to be zero.

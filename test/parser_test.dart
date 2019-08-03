@@ -32,7 +32,7 @@ void main() {
 
     test('mix decimal + int', (){
 
-      var parser = dg.build(start: dg.arithmeticExpression);
+      var parser = dg.build(start: dg.binaryExpression);
       var result = parser.parse('1.2');
 
       expect(true, result.isSuccess);
@@ -62,7 +62,7 @@ void main() {
   group('arithmetic', () {
     var parser;
     setUp(() {
-      parser = dg.build(start: dg.arithmeticExpression);
+      parser = dg.build(start: dg.binaryExpression);
     });
 
     test('addition', () {
@@ -327,11 +327,37 @@ void main() {
     test('nested call in call expression', () {
       
       var result = parser.parse('map(toString())');
-
-      expect(true, false);
+      
       expect(CallExpression, result.value.runtimeType);
+      var exp = result.value as CallExpression;
+      expect(Identifier, exp.callee.runtimeType);
+      expect('map', (exp.callee as Identifier).name);
 
-    }, skip: "TODO: params testing");
+      expect(CallExpression, exp.arguments[0].runtimeType);  
+      var arg = exp.arguments[0] as CallExpression;
+      expect(Identifier, arg.callee.runtimeType);
+      expect('toString', (arg.callee as Identifier).name); 
+        
+    });
+
+    test('nested call with multiple params', () {
+      
+      var result = parser.parse('Map(toString(a,b), list.length, map.length())');
+
+      expect(CallExpression, result.value.runtimeType);
+      var exp = result.value as CallExpression;
+
+      expect(Identifier, exp.callee.runtimeType);
+      expect('Map', (exp.callee as Identifier).name);
+      expect('toString', ((exp.arguments[0] as CallExpression).callee as Identifier).name);
+      expect('a', ((exp.arguments[0] as CallExpression).arguments[0] as Identifier).name);
+      expect('b', ((exp.arguments[0] as CallExpression).arguments[1] as Identifier).name);
+      expect('list', ((exp.arguments[1] as MemberExpression).object as Identifier).name);
+      expect('length', ((exp.arguments[1] as MemberExpression).propery as Identifier).name);
+      expect('map', (((exp.arguments[2] as CallExpression).callee as MemberExpression).object as Identifier).name);
+      expect('length', (((exp.arguments[2] as CallExpression).callee as MemberExpression).propery as Identifier).name);
+
+    });
 
     test('call+member', (){
 
