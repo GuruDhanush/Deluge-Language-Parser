@@ -22,7 +22,7 @@ steps:
     displayName: 'Unit test'
   - script: |
       /usr/lib/dart/bin/pub global activate test_coverage  
-      /usr/lib/dart/bin/pub global run test_coverage --exclude "test/all_test.dart"
+      /usr/lib/dart/bin/pub global run test_coverage --exclude "test/all_test.dart" --no-badge
       bash <(curl -s https://codecov.io/bash) -t $(CODECOV_TOKEN)
     displayName: 'test coverage'
  

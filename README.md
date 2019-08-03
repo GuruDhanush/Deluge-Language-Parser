@@ -1,8 +1,8 @@
 # Deluge language parser
 
-[![Build Status](https://dev.azure.com/guruzoho/flutter-winui/_apis/build/status/GuruDhanush.Deluge-Language-Parser?branchName=master)](https://dev.azure.com/guruzoho/flutter-winui/_build/latest?definitionId=2&branchName=master)
-[![Coverage Status](https://coveralls.io/repos/github/GuruDhanush/Deluge-Language-Parser/badge.svg?branch=master)](https://coveralls.io/github/GuruDhanush/Deluge-Language-Parser?branch=master)
 
+[![Build Status](https://dev.azure.com/guruzoho/flutter-winui/_apis/build/status/GuruDhanush.Deluge-Language-Parser?branchName=master)](https://dev.azure.com/guruzoho/flutter-winui/_build/latest?definitionId=2&branchName=master)
+[![codecov](https://codecov.io/gh/GuruDhanush/Deluge-Language-Parser/branch/master/graph/badge.svg)](https://codecov.io/gh/GuruDhanush/Deluge-Language-Parser)
 
 Created using parser combinators in dart.
 

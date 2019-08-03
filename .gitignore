@@ -7,6 +7,9 @@ pubspec.lock
 # Files by intellij
 .idea
 
+# file by test_coverage
+test/.test_coverage.dart
+
 # Conventional directory for build outputs
 build/
 
