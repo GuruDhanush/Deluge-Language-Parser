@@ -25,4 +25,13 @@ steps:
       /usr/lib/dart/bin/pub global run test_coverage --exclude "test/all_test.dart" --no-badge
       bash <(curl -s https://codecov.io/bash) -t $(CODECOV_TOKEN)
     displayName: 'test coverage'
+  - script: |
+      cd coverage
+      curl https://raw.githubusercontent.com/eriwen/lcov-to-cobertura-xml/master/lcov_cobertura/lcov_cobertura.py --output lcovcob.py
+      python lcovcob.py  lcov.info 
+    displayName: 'convert lcov to Cobertura'
+  - task: PublishCodeCoverageResults@1
+    inputs:
+      codeCoverageTool: 'Cobertura'
+      summaryFileLocation: $(System.DefaultWorkingDirectory)/Deluge-Language-Parser/coverage/coverage.xml
  
