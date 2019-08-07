@@ -18,72 +18,112 @@ class DgGrammarDef extends GrammarDefinition {
 
   Parser start() => ref(startParser).end();
 
-  Parser startParser() => ref(stringLiteral);
+  Parser startParser() => ref(statements);
 
-  Parser expression() =>
-      ref(identifier) &
-      ref(token, '=') &
-      (ref(TRUE) | ref(FALSE) | ref(BIGINT) | ref(DECIMAL) | ref(identifier));
-
-  Parser conditionalExpression() =>
-      (ref(singleParam) &
-          (ref(equalityOperator) |
-              ref(conditionalExpression) |
-              ref(relationalOperator)) &
-          ref(singleParam)) |
-      ref(BOOLEAN);
-
-  Parser qualified() => ref(identifier) & methodOrProp().star();
-
-  Parser methodOrProp() => (ref(token, '.') & ref(identifier)) | ref(parmas);
-  //Parser assignmentExpression() => ref()
-
-  //TODO: Implement a strict version of params.
-  //An strict version of param identifier is difficult to parse, so the lenient version
-  //may or maynot accept ',' between the params.
-  Parser parmas() =>
+  Parser params() =>
       ref(token, '(') &
-      ((ref(callExpression) | ref(memberExpression) | ref(binaryExpression)) &
-              ref(token, ',').optional())
-          .star() &
+      (ref(binaryExpression) | ref(logicalExpression) | ref(singleParam) | ref(whitespace).star()).separatedBy(ref(token, ','),
+          includeSeparators: false, optionalSeparatorAtEnd: false) &
       ref(token, ')');
 
   Parser singleParam() =>
       ref(decimalLiteral) |
       ref(bigintLiteral) |
       ref(booleanLiteral) |
+      ref(callExpression) |
+      ref(memberExpression) |
       ref(identifier) |
       ref(stringLiteral) |
-      ref(bracketParam);
+      ref(bracketExpression) |
+      ref(listExpression) |
+      ref(objectExpression) |
+      ref(token, '(') & ref(singleParam) & ref(token, ')') |
+      ref(unaryExpression);
 
-  Parser bracketParam() =>
-      ref(token, '(') & ref(binaryExpression) & ref(token, ')');
+  Parser unaryExpression() => ref(prefixConditionalOperator) & ref(singleParam);
 
-  //TODO: Fix the call & member expressions in binary expression. 
-  //binary expression fails on tackling call expression or member expression as its left and right
-  //adding those leads to stack overflow. 
   Parser binaryExpression() =>
-     (ref(singleParam))  &
+      (ref(singleParam)) &
       ((ref(arithemticOperator) |
                   ref(equalityOperator) |
                   ref(relationalOperator)) &
               (ref(singleParam)))
           .star();
 
+  Parser bracketExpression() =>
+      ref(token, '(') & (ref(binaryExpression) | ref(logicalExpression)) & ref(token, ')');
+
   Parser logicalExpression() =>
-      ref(binaryExpression) & (ref(conditionalOperator) & ref(binaryExpression)).star();
+      ref(binaryExpression) &
+      (ref(conditionalOperator) & ref(binaryExpression)).star();
 
   Parser callExpression() =>
-      (ref(memberExpression) | ref(binaryExpression)) & ref(parmas);
+      ((ref(memberExpression) | ref(identifier) | ref(bracketExpression)) &
+          ref(params)) &
+      (ref(token, '.') & ref(identifier) & ref(params).optional()).star();
 
   Parser memberExpression() =>
-      ref(binaryExpression) & ref(token, '.') & ref(binaryExpression);
+      ((ref(identifier) | ref(bracketExpression)) &
+          ref(token, '.') &
+          ref(identifier)) &
+      (ref(token, '.') & ref(identifier) & ref(params).optional()).star();
 
   Parser assignmentExpression() =>
       (ref(memberExpression) | ref(identifier)) &
       ref(assignmentOperator) &
-      (ref(callExpression) | ref(memberExpression) | ref(binaryExpression)) &
+      (ref(ifExpression) |
+          ref(ifNullExpression) |
+          ref(callExpression) |
+          ref(memberExpression) |
+          ref(binaryExpression));
+
+  Parser expressionStatement() =>
+      (ref(assignmentExpression) | ref(callExpression) | ref(infoExpression)) &
       ref(token, ';');
+
+  Parser statement() =>
+      ref(token, SINGLELINE_COMMENT) |
+      ref(token, MULTILINE_COMMENT) |
+      ref(returnStatement) |
+      ref(ifStatement) |
+      ref(forStatement) |
+      ref(expressionStatement);
+
+  Parser statements() => ref(statement).star();
+
+  Parser infoExpression() =>
+      ref(INFO) & (ref(singleParam) | ref(binaryExpression));
+
+  Parser returnStatement() => ref(RETURN) & ref(singleParam) & ref(token, ';');
+
+  //TODO: look after binary expressions in single params
+  Parser ifNullExpression() =>
+      ref(IFNULL) &
+      ref(token, '(') &
+      ref(singleParam) &
+      ref(token, ',') &
+      ref(singleParam) &
+      ref(token, ')');
+  //TODO: look after binary expressions in single params
+  Parser ifExpression() =>
+      ref(IF) &
+      ref(token, '(') &
+      (ref(logicalExpression) | ref(binaryExpression) | ref(singleParam)) &
+      ref(token, ',') &
+      ref(singleParam) &
+      ref(token, ',') &
+      ref(singleParam) &
+      ref(token, ')');
+
+  Parser objectProperty() => ref(singleParam) & ref(token, ':') & ref(singleParam);
+  Parser objectBody() =>
+      ref(objectProperty).separatedBy(ref(token, ','), includeSeparators: false);
+  Parser listBody() =>
+      ref(singleParam).separatedBy(ref(token, ','), includeSeparators: false);
+  Parser listExpression() =>
+      ref(token, '[') & ref(listBody).optional() & ref(token, ']');
+  Parser objectExpression() =>
+      ref(token, '{') & ref(objectBody).optional() & ref(token, '}');
 
   Parser decimalLiteral() => ref(token, DECIMAL);
   Parser bigintLiteral() => ref(token, BIGINT);
@@ -92,38 +132,48 @@ class DgGrammarDef extends GrammarDefinition {
 
   Parser identifier() => ref(token, IDENTIFIER);
 
-  Parser ifexpression() =>
+  Parser blockStatement() => ref(token, '{') & ref(statements) & ref(token, '}');
+
+  Parser ifStatement() =>
       ref(IF) &
       ref(token, '(') &
-      ref(conditionalExpression) &
+      (ref(logicalExpression) | ref(binaryExpression) | ref(singleParam)) &
       ref(token, ')') &
-      ref(token, '{') &
-      ref(expression).star() &
-      ref(token, '}') &
-      (ref(ELSE) & ref(token, '{') & ref(expression).star() & ref(token, '}'))
+      ref(blockStatement) &
+      (ref(ELSE) &
+              ref(IF) &
+              ref(token, '(') &
+              (ref(logicalExpression) |
+                  ref(binaryExpression) |
+                  ref(singleParam)) &
+              ref(token, ')') &
+              ref(blockStatement) )
+          .star() &
+      (ref(ELSE) & ref(blockStatement))
           .optional();
 
-  Parser zohoSysVariables() =>
-      ref(ZOHO) &
-      char('.') &
-      (ref(token, 'currentdate') |
-          ref(token, 'currenttime') |
-          ref(token, 'loginuser') |
-          ref(token, 'loginuserid') |
-          ref(token, 'adminuser') |
-          ref(token, 'adminuserid') |
-          ref(token, 'appname') |
-          ref(token, 'ipaddress') |
-          ref(token, 'appuri'));
+  Parser forStatement() =>
+      ref(FOR) &
+      ref(EACH) &
+      ref(INDEX).optional() &
+      ref(identifier) &
+      ref(IN) &
+      ref(singleParam) &
+      ref(blockStatement);
 
-  //TODO: works only with bigint
-  Parser list() =>
-      (ref(token, '{') &
-          ((ref(BIGINT) & ref(token, ',')).star() & ref(BIGINT)).optional() &
-          ref(token, '}')) |
-      (ref(token, '[') &
-          ((ref(BIGINT) & ref(token, ',')).star() & ref(BIGINT)).optional() &
-          ref(token, ']'));
+  //TODO: Move out from grammar to analysis phase?
+  // Parser zohoSysVariables() =>
+  //     ref(ZOHO) &
+  //     char('.') &
+  //     (ref(token, 'currentdate') |
+  //         ref(token, 'currenttime') |
+  //         ref(token, 'loginuser') |
+  //         ref(token, 'loginuserid') |
+  //         ref(token, 'adminuser') |
+  //         ref(token, 'adminuserid') |
+  //         ref(token, 'appname') |
+  //         ref(token, 'ipaddress') |
+  //         ref(token, 'appuri'));
 
   Parser arithemticOperator() =>
       ref(token, '+') |
@@ -149,7 +199,6 @@ class DgGrammarDef extends GrammarDefinition {
 
   Parser conditionalOperator() => ref(token, '&&') | ref(token, '||');
   Parser prefixConditionalOperator() => ref(token, '!');
-  Parser listOperator() => ref(IN) & ref(NOT).optional();
 
   //
   // Keyword definitions
@@ -169,6 +218,7 @@ class DgGrammarDef extends GrammarDefinition {
   Parser NOT() => ref(token, 'not');
   Parser ZOHO() => ref(token, 'zoho');
   Parser SENDMAIL() => ref(token, 'sendemail');
+  Parser INDEX() => ref(token, 'index');
 
   //TODO: Know whether the deluge has  no first digit rule.
   // It always will be  ¯\_(ツ)_/¯ .
@@ -198,6 +248,7 @@ class DgGrammarDef extends GrammarDefinition {
   Parser DIGIT() => digit();
 
   Parser NEWLINE() => pattern('\n\r');
+  //TODO: potential perf issues with starGreedy
   Parser SINGLELINE_COMMENT() =>
       char('/') &
       char('/') &
@@ -207,12 +258,14 @@ class DgGrammarDef extends GrammarDefinition {
   Parser MULTILINE_COMMENT() =>
       char('/') &
       char('*') &
-      (char('*') & char('/')).neg().star() &
+      (ref(MULTILINE_COMMENT) | string('*/').neg()).star() &
       char('*') &
       char('/');
 
-  Parser STRING() =>
-      (char('"') & ref(STRING_CONTENT).star() & char('"')).pick(1);
+  Parser STRING() => char('"') & ref(CHAR_PRIMITIVE).star() & char('"');
 
-  Parser STRING_CONTENT() => char('\\') & char('"') | char('"').neg();
+  Parser CHAR_PRIMITIVE() =>
+      (char('\\') & pattern(escapeChars.join())).flatten() | pattern('^"\\');
+
+  List escapeChars = ['"', '\\', '/', 'b', 'f', 'n', 'r', 't'];
 }

@@ -24,15 +24,18 @@ class Loc {
 
 class ExpressionStatement extends Node {
 
-  Node expression;
+  Object expression;
 
+  ExpressionStatement({this.expression}) : super();
 }
 
 class AssignmentExpression extends Node {
 
-  String opeator;
-  Node left;
-  Node Right;  
+  String ooperator;
+  Object left;
+  Object right;
+
+  AssignmentExpression({this.left, this.ooperator, this.right}) : super();  
 }
 
 class Identifier extends Node {
@@ -43,8 +46,12 @@ class Identifier extends Node {
 }
 
 class ForStatement extends Node {
-  Node init;
-  Node body;
+  Object index;
+  Object list;
+  bool isIndex;
+  Object body;
+  
+  ForStatement({this.index, this.list, this.isIndex, this.body}) : super();
 }
 
 class CallExpression extends Node {
@@ -82,10 +89,6 @@ class StringLiteral extends Node {
   StringLiteral({this.value, this.raw}) : super();
 }
 
-class BlockStatement extends Node {
-  List<Node> body;
-}
-
 class MemberExpression extends Node {
 
   Object object;
@@ -94,11 +97,6 @@ class MemberExpression extends Node {
   MemberExpression({this.object, this.propery}) : super();
 }
 
-class IfStatement extends Node {
-  Node test;
-  Node consequent;
-  Node alternate;
-}
 
 class BinaryExpression extends Node {
 
@@ -116,19 +114,80 @@ class MapExpression extends Node {
 }
 
 class ObjectProperty extends Node {
-  Node key;
-  Node value;
+  Object key;
+  Object value;
+
+  ObjectProperty({this.key, this.value}) : super();
 }
 
 class LogicalExpression extends Node {
-  Node left;
-  Node ooperator;
-  Node right;
+  Object left;
+  String oopertor;
+  Object right;
+
+  LogicalExpression({this.left, this.oopertor, this.right}) : super();
+  
 }
 
 class ReturnStatement extends Node {
-  Node argument;
+  Object argument;
+
+  ReturnStatement({this.argument}) : super();
+}
+
+class InfoExpression extends Node {
+  Object argument;
+
+  InfoExpression({this.argument}) : super();
+}
+
+class IfExpression extends Node {
+
+  Object test;
+  Object value;
+  Object alternate;
+
+  IfExpression({this.test, this.value, this.alternate}) : super();
+}
+
+class IfNullExpression extends Node {
+
+  Object value;
+  Object alternate;
+
+  IfNullExpression({this.value, this.alternate}) : super();
 }
 
 
+class IfStatement extends Node {
+  Object test;
+  Object consequent;
+  Object alternate;
 
+  IfStatement({this.test, this.consequent, this.alternate});
+}
+
+class BlockStatement extends Node {
+  List<Object> body;
+
+  BlockStatement({this.body}) : super();
+}
+
+class UnaryExpression extends Node {
+  String ooperator;
+  Object expression;
+
+  UnaryExpression({this.expression, this.ooperator}) : super();
+}
+
+class ObjectExpression extends Node {
+  List<Object> properties;
+
+  ObjectExpression({this.properties}) : super();
+}
+
+class ListExpression extends Node {
+  List<Object> elements;
+
+  ListExpression({this.elements}) : super();
+}

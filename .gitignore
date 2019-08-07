@@ -13,6 +13,7 @@ coverage/
 
 # Conventional directory for build outputs
 build/
+dist/
 
 # Directory created by dartdoc
 doc/api/

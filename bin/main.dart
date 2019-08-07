@@ -1,27 +1,28 @@
+import 'dart:io';
+
+import 'package:DelugeDartParser/lexer.dart';
 import 'package:DelugeDartParser/parser.dart';
 import 'package:petitparser/petitparser.dart';
 import 'package:graphs/graphs.dart' as gp;
 import 'package:DelugeDartParser/node.dart';
+import '../test/example/sample1.dart' as sample;
 
 main(List<String> arguments) {
-  // var nodeA = Node('A', 1);
-  // var nodeB = Node('B', 2);
-  // var nodeC = Node('C', 3);
-  // var nodeD = Node('D', 4);
-  // var graph = Graph({
-  //   nodeA: [nodeB, nodeC],
-  //   nodeB: [nodeC, nodeD],
-  //   nodeC: [nodeB, nodeD]
-  // });
 
-  // var components = gp.stronglyConnectedComponents<Node>(
-  //     graph.nodes.keys, (node) => graph.nodes[node]);
-
-  // print(components);
-
-  Node n = Node(start: 10, end: 11);
-  print("${n.start}, ${n.end}");
-  
+  var parser = DelugeParser();
+  var input = sample.SAMPLE1;
+  int runs = 1000;
+  double time = 0;
+  for(var i = 0; i < runs; i++) {
+    var watch = Stopwatch() ..start();
+    var result = parser.parse(input);
+    watch.stop();
+    if(result.position != input.length) { print('error'); return;}
+    time += watch.elapsedMicroseconds;
+  }
+  var totalTime = Duration(microseconds: time.toInt());
+  print('elapsed total time ${totalTime.inSeconds}s, average time: ${totalTime.inMilliseconds/runs}ms');
+  stdin.readLineSync();
 
 
 }

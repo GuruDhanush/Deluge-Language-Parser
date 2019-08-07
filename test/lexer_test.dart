@@ -3,6 +3,7 @@ import 'package:DelugeDartParser/parser.dart';
 import 'package:petitparser/petitparser.dart';
 import 'package:test/test.dart';
 import 'package:DelugeDartParser/lexer.dart';
+import './example/sample1.dart' as sample;
 
 void main() {
   DgGrammarDef dg;
@@ -31,12 +32,24 @@ void main() {
         '\n',
       ], result.value);
     });
+
+    test('with escape chars', (){
+      parser = dg.build(start: dg.start);
+      var input = """ 
+      //response.put("text",createdBy + " \nLast Modified on " + lastModifiedDate + " \n");
+      card = Map();
+      """;
+      var result = parser.parse(input);
+
+      assert(result.isSuccess);
+      expect(input.length, result.position);
+    }, skip: 'fails due to improper line comment implementation.');
+  
   });
 
   group('multi line comment', () {
-
     Parser parser;
-    setUp((){
+    setUp(() {
       parser = dg.build(start: dg.MULTILINE_COMMENT);
     });
 
@@ -46,24 +59,36 @@ void main() {
       assert(result.isSuccess);
       expect('/', result.value[0]);
       expect('*', result.value[1]);
-      expect(input.length-4, result.value[2].length);
+      expect(input.length - 4, result.value[2].length);
       expect('*', result.value[3]);
       expect('/', result.value[4]);
     });
-    
-    
+
     test('with new lines', () {
       var input = '/* Hello \n  Hi \n Bye  */';
       var result = parser.parse(input);
       assert(result.isSuccess);
       expect('/', result.value[0]);
       expect('*', result.value[1]);
-      expect(input.length-4, result.value[2].length);
+      expect(input.length - 4, result.value[2].length);
       expect('*', result.value[3]);
       expect('/', result.value[4]);
     });
+
+    test('nested multi line comments', (){
+
+      var input = """/* 
+        This is a comment
+        /*
+          THis is a nested comment
+        */
+      */""";
+      var result = parser.parse(input);
+      assert(result.isSuccess);
+      expect(input.length, result.position);
+    });
   });
-  
+
   group("string", () {
     Parser parser;
 
@@ -75,8 +100,36 @@ void main() {
       var input = '"Hello World"';
       var result = parser.parse(input);
       expect(null, result.message);
-      expect("Hello World".split(''), result.value);
-      print(result);
+      expect("Hello World".split(''), result.value[1]);
+    });
+
+    test('with escape chars', () {
+      var input = '"Hello \\n \\" Hi "';
+      var result = parser.parse(input);
+      assert(result.isSuccess);
+      // one -2 for two end punctuations and other 2 to account for extra \ removed by dart
+      expect(input.length-2-2, result.value[1].length);
+    });
+
+    test('string inner content - not accept', () {
+      var result = parser.parse('"""');
+      assert(result.isSuccess);
+      expect(0, result.value[1].length);
+    });
+
+    test('string inner content - accept', () {
+      var result = parser.parse('"\\""');
+      assert(result.isSuccess);
+      expect('\\"', result.value[1][0]);
+    });
+
+    test('with unicode chars', () {
+      var input = '"hello 👍."';
+      var result = parser.parse(input);
+
+      assert(result.isSuccess);
+      expect(input.length, result.position);
+      
     });
   });
 
@@ -167,24 +220,22 @@ void main() {
   });
 
   group('boolean', () {
-    
     Parser parser;
-    setUp((){
+    setUp(() {
       parser = dg.build(start: dg.booleanLiteral);
     });
 
-    test('true', (){
+    test('true', () {
       var result = parser.parse('true');
       expect(true, result.isSuccess);
       expect('true', result.value.value);
     });
 
-    test('false', (){
+    test('false', () {
       var result = parser.parse('false');
       expect(true, result.isSuccess);
       expect('false', result.value.value);
     });
-    
   });
   group("identifier", () {
     Parser parser;
@@ -213,40 +264,65 @@ void main() {
   group("if", () {
     Parser parser;
     setUp(() {
-      parser = dg.build(start: dg.ifexpression);
+      parser = dg.build(start: dg.ifStatement);
     });
 
     test("if-normal", () {
-      var input = "if(as = true) { as = false } else if(aa = false) { } ";
+      var input = """
+        if(true) {
+          as = false;
+        }
+      """;
       var result = parser.parse(input);
       print(result);
       expect(true, result.isSuccess);
-    },skip: "TODO: make logical expressions");
+      expect(input.length, result.position);
+    });
   });
 
-  group("sysvars", () {
+  group('for', () {
     Parser parser;
     setUp(() {
-      parser = dg.build(start: dg.zohoSysVariables);
+      parser = dg.build(start: dg.forStatement);
     });
 
-    test("normal", () {
-      var input = 'zoho.appname';
-      expect(true, parser.accept(input));
-    });
-
-    test("typing for suggest", () {
-      var input = 'zoho.cus';
+    test('For simple', () {
+      var input = """ 
+        for each i in k.getList() {
+            k = i;
+        }
+      """;
       var result = parser.parse(input);
-      expect(true, result.isFailure);
-      print(result.message);
+
+      assert(result.isSuccess);
+      expect(input.length, result.position);
     });
   });
 
-  group("list", () {
+  //TODO: removed since there is a possibility of moving sysvar to analysis
+  // group("sysvars", () {
+  //   Parser parser;
+  //   setUp(() {
+  //     parser = dg.build(start: dg.zohoSysVariables);
+  //   });
+
+  //   test("normal", () {
+  //     var input = 'zoho.appname';
+  //     expect(true, parser.accept(input));
+  //   });
+
+  //   test("typing for suggest", () {
+  //     var input = 'zoho.cus';
+  //     var result = parser.parse(input);
+  //     expect(true, result.isFailure);
+  //     print(result.message);
+  //   });
+  // });
+
+  group("list expression", () {
     Parser parser;
     setUp(() {
-      parser = dg.build(start: dg.list);
+      parser = dg.build(start: dg.listExpression);
     });
 
     test('block list', () {
@@ -261,14 +337,14 @@ void main() {
       var result = parser.parse(input);
       print(result.value);
       assert(result.isSuccess);
-    });
+    },skip: 'yet to be supported');
 
     test('swiggly empty list', () {
       var input = '{}';
       var result = parser.parse(input);
       print(result.value);
       assert(result.isSuccess);
-    });
+    },skip: 'yet to be supported');
 
     test('block empty list', () {
       var input = '[]';
@@ -281,7 +357,7 @@ void main() {
   group("line", () {
     Parser parser;
     setUp(() {
-      parser = dg.build(start: dg.qualified);
+      parser = dg.build(start: dg.callExpression);
     });
 
     test('inital', () {
@@ -289,70 +365,111 @@ void main() {
       //var input = 'lastModifiedDate.getDay() + " " + lastModifiedDate.getDate().replaceFirst("(st|nd|rd|th)","").getAlpha() + " , " + year.subText(yearLength - 2,yearLength)';
       var input = 'hello.toString()';
       var result = parser.parse(input);
-      print(result.message);
+      assert(result.isSuccess);
+      //print(result.message);
       //assert(result.isSuccess);
-      var token = result.value[0] as Token;
-      print(token);
+      //var token = result.value[0] as Token;
+      //print(token);
     });
   });
 
   group('binary expression', () {
-
     Parser parser;
-    setUp((){
+    setUp(() {
       parser = dg.build(start: dg.binaryExpression);
     });
 
-  test('addition', () {
+    test('addition', () {
       var result = parser.parse('1+2');
       assert(result.isSuccess);
-      print(result.value);
-    },tags: 'flaky');
+      expect(1, result.value[0].value);
+      expect('+', result.value[1][0][0].value);
+      expect(2, result.value[1][0][1].value);
+    });
 
     test('substraction', () {
       var result = parser.parse('1-2');
       assert(result.isSuccess);
-      print(result.value);
-    },tags: 'flaky');
+      expect(1, result.value[0].value);
+      expect('-', result.value[1][0][0].value);
+      expect(2, result.value[1][0][1].value);
+    });
 
     test('add+sub', () {
       var result = parser.parse('1+2-3');
       assert(result.isSuccess);
-      print(result.value);
-    },tags: 'flaky');
+      expect(1, result.value[0].value);
+      expect('+', result.value[1][0][0].value);
+      expect(2, result.value[1][0][1].value);
+      expect('-', result.value[1][1][0].value);
+      expect(3, result.value[1][1][1].value);
+    });
 
     test("multiply", () {
       var result = parser.parse('1+2-3*4');
       assert(result.isSuccess);
-      print(result.value);
-    },tags: 'flaky');
+      expect(1, result.value[0].value);
+      expect('+', result.value[1][0][0].value);
+      expect(2, result.value[1][0][1].value);
+      expect('-', result.value[1][1][0].value);
+      expect(3, result.value[1][1][1].value);
+      expect('*', result.value[1][2][0].value);
+      expect(4, result.value[1][2][1].value);
+    });
 
     test('division', () {
       var result = parser.parse('1+2-3*4/5');
       assert(result.isSuccess);
-      print(result.value);
-    },tags: 'flaky');
+      expect(1, result.value[0].value);
+      expect('+', result.value[1][0][0].value);
+      expect(2, result.value[1][0][1].value);
+      expect('-', result.value[1][1][0].value);
+      expect(3, result.value[1][1][1].value);
+      expect('*', result.value[1][2][0].value);
+      expect(4, result.value[1][2][1].value);
+      expect('/', result.value[1][3][0].value);
+      expect(5, result.value[1][3][1].value);
+    });
 
     test('mod', () {
       var result = parser.parse('1+2-3*4/5%6');
       assert(result.isSuccess);
-      print(result.value);
-    },tags: 'flaky');
+      expect(1, result.value[0].value);
+      expect('+', result.value[1][0][0].value);
+      expect(2, result.value[1][0][1].value);
+      expect('-', result.value[1][1][0].value);
+      expect(3, result.value[1][1][1].value);
+      expect('*', result.value[1][2][0].value);
+      expect(4, result.value[1][2][1].value);
+      expect('/', result.value[1][3][0].value);
+      expect(5, result.value[1][3][1].value);
+      expect('%', result.value[1][4][0].value);
+      expect(6, result.value[1][4][1].value);
+    });
 
     test('brackets', () {
-//      var result = parser.parse('(1+2)-(3*4)/(5%6)');
       var result = parser.parse('(1+2)');
       assert(result.isSuccess);
-      print(result.value);
-    },tags: 'flaky');
+      expect('(', result.value[0][0].value);
+      expect(1, result.value[0][1][0].value);
+      expect('+', result.value[0][1][1][0][0].value);
+      expect(2, result.value[0][1][1][0][1].value);
+      expect(')', result.value[0][2].value);
+    });
 
-    test('identifiers', () {
-      var result = parser.parse('a.len() + b.len() + 3');
+    test('member expressions', () {
+      var result = parser.parse('a.len + b.len + c.len');
+
       assert(result.isSuccess);
-      print(result.value);
-    },tags: 'flaky');
+      expect('a', result.value[0][0].value);
+      expect('len', result.value[0][2].value);
+      expect('b', result.value[1][0][1][0].value);
+      expect('len', result.value[1][0][1][2].value);
+      expect('c', result.value[1][1][1][0].value);
+      expect('len', result.value[1][1][1][2].value);
+    });
 
-    test('equality', (){
+    test('equality', () {
       var result = parser.parse('1 == 2');
       assert(result.isSuccess);
 
@@ -366,7 +483,20 @@ void main() {
       assert(result.isSuccess);
       expect(1, result.value[0].value);
       expect('<=', result.value[1][0][0].value);
-      expect(2, result.value[1][0][1].value);    
+      expect(2, result.value[1][0][1].value);
+    });
+
+    test('with call expressions', () {
+      var result = parser.parse('a.len() + c.len + 2');
+      assert(result.isSuccess);
+
+      expect('a', result.value[0][0][0].value);
+      expect('len', result.value[0][0][2].value);
+      expect('+', result.value[1][0][0].value);
+      expect('c', result.value[1][0][1][0].value);
+      expect('len', result.value[1][0][1][2].value);
+      expect('+', result.value[1][1][0].value);
+      expect(2, result.value[1][1][1].value);
     });
   });
 
@@ -379,7 +509,7 @@ void main() {
     test('normal', () {
       var result = parser.parse('map()');
       expect(true, result.isSuccess);
-      expect('map', result.value[0][0].value);
+      expect('map', result.value[0].value);
       expect('(', result.value[1][0].value);
       expect(')', result.value[1][2].value);
 
@@ -389,7 +519,7 @@ void main() {
     test('with params', () {
       var result = parser.parse('map(identify, 1)');
       expect(true, result.isSuccess);
-      expect('map', result.value[0][0].value);
+      expect('map', result.value[0].value);
       expect('(', result.value[1][0].value);
       expect(2, result.value[1][1].length);
       expect(')', result.value[1][2].value);
@@ -400,12 +530,26 @@ void main() {
     test('bigint params', () {
       var result = parser.parse('map(1,2,3)');
       expect(true, result.isSuccess);
-      expect('map', result.value[0][0].value);
+      expect('map', result.value[0].value);
       expect('(', result.value[1][0].value);
       expect(3, result.value[1][1].length);
       expect(')', result.value[1][2].value);
 
       print(result.value);
+    });
+
+    test('nested in call', () {
+      //arguments.trim().length()
+      var result = parser.parse('a.b().c()');
+
+      assert(result.isSuccess);
+      expect('a', result.value[0][0].value);
+      expect('b', result.value[0][2].value);
+      expect('(', result.value[1][0].value);
+      expect(')', result.value[1][2].value);
+      expect('c', result.value[2][0][1].value);
+      expect('(', result.value[2][0][2][0].value);
+      expect(')', result.value[2][0][2][2].value);
     });
   });
 
@@ -418,122 +562,104 @@ void main() {
     test('normal', () {
       var result = parser.parse('hello.length');
 
-      expect('hello', result.value[0][0].value);
+      expect('hello', result.value[0].value);
       expect('.', result.value[1].value);
-      expect('length', result.value[2][0].value);
+      expect('length', result.value[2].value);
+    });
 
+    test('nested', () {
+      var result = parser.parse('a.b.c');
+      assert(result.isSuccess);
+      expect('a', result.value[0].value);
+      expect('b', result.value[2].value);
+      expect('c', result.value[3][0][1].value);
     });
   });
 
-  group('object expression', (){
-
-
-  });
+  group('object expression', () {});
 
   group('Assignment expression', () {
-    
     Parser parser;
-    setUp((){
+    setUp(() {
       parser = dg.build(start: dg.assignmentExpression);
     });
 
     test('identifier = identifer', () {
-      
-      var result = parser.parse('hello = hi;');
+      var result = parser.parse('hello = hi');
       expect(true, result.isSuccess);
       expect('hello', result.value[0].value);
       expect('=', result.value[1].value);
       expect('hi', result.value[2][0].value);
-      expect(';', result.value[3].value);
     });
 
     test('identifier = literal (int)', () {
-      
-      var result = parser.parse('hello = 12;');
+      var result = parser.parse('hello = 12');
       expect(true, result.isSuccess);
       expect('hello', result.value[0].value);
       expect('=', result.value[1].value);
       expect(12, result.value[2][0].value);
-      expect(';', result.value[3].value);
-    
     });
 
     test('identifier = literal (decimal)', () {
-      
-      var result = parser.parse('hello = 1.2;');
+      var result = parser.parse('hello = 1.2');
       expect(true, result.isSuccess);
       expect('hello', result.value[0].value);
       expect('=', result.value[1].value);
       expect(1.2, result.value[2][0].value);
-      expect(';', result.value[3].value);
-    
     });
 
     test('identifier = literal (string)', () {
-      
-      var result = parser.parse('hello = "hi";');
+      var result = parser.parse('hello = "hi"');
       expect(true, result.isSuccess);
       expect('hello', result.value[0].value);
       expect('=', result.value[1].value);
-      expect('hi'.split(''), result.value[2][0].value);
-      expect(';', result.value[3].value);
-    
+      expect('hi'.split(''), result.value[2][0].value[1]);
     });
 
     test('identifier = literal (bool)', () {
-      
-      var result = parser.parse('hello = true;');
+      var result = parser.parse('hello = true');
       expect(true, result.isSuccess);
       expect('hello', result.value[0].value);
       expect('=', result.value[1].value);
       expect('true', result.value[2][0].value);
-      expect(';', result.value[3].value);
-    
     });
 
-    test('increment by 1', (){
-      var result = parser.parse('i +=1;');
+    test('increment by 1', () {
+      var result = parser.parse('i +=1');
 
       expect(true, result.isSuccess);
       expect('i', result.value[0].value);
       expect('+=', result.value[1].value);
       expect(1, result.value[2][0].value);
-      expect(';', result.value[3].value);
     });
 
     test('increment with an member expression', () {
-      
-      var result = parser.parse('i += list.length;');
+      var result = parser.parse('i += list.length');
+
+      expect(true, result.isSuccess);
+      expect('i', result.value[0].value);
+      expect('+=', result.value[1].value);
+      expect('list', result.value[2][0].value);
+      expect('length', result.value[2][2].value);
+    });
+
+    test('increment with an call expression', () {
+      var result = parser.parse('i += list.get(1)');
 
       expect(true, result.isSuccess);
       expect('i', result.value[0].value);
       expect('+=', result.value[1].value);
       expect('list', result.value[2][0][0].value);
-      expect('length', result.value[2][2][0].value);
-      expect(';', result.value[3].value);
-
+      expect('get', result.value[2][0][2].value);
+      expect(1, result.value[2][1][1][0][0].value);
     });
-
-    test('increment with an call expression', () {
-      
-      var result = parser.parse('i += list.get(1);');
-
-      expect(true, result.isSuccess);
-      expect('i', result.value[0].value);
-      expect('+=', result.value[1].value);
-      expect('list', result.value[2][0][0][0].value);
-      expect('get', result.value[2][0][2][0].value);
-      expect(1, result.value[2][1][1][0][0][0].value);
-      expect(';', result.value[3].value);
-
-    });
+  
 
   });
 
   group('Logical expression ', () {
-
     Parser parser;
-    setUp((){
+    setUp(() {
       parser = dg.build(start: dg.logicalExpression);
     });
 
@@ -546,7 +672,6 @@ void main() {
       expect('b', result.value[1][0][1][0].value);
     });
 
-    
     test('int || int', () {
       var result = parser.parse('1 || 2');
 
@@ -560,8 +685,59 @@ void main() {
       var result = parser.parse('map.length && map.get()');
 
       assert(result.isSuccess);
-      
+      expect('map', result.value[0][0][0].value);
+      expect('length', result.value[0][0][2].value);
+      expect('&&', result.value[1][0][0].value);
+      expect('map', result.value[1][0][1][0][0][0].value);
+      expect('get', result.value[1][0][1][0][0][2].value);
     });
 
+    test('&& with call expression', () {
+      var result = parser
+          .parse('arguments.trim().length() <= 0 && selections.size() <= 0');
+
+      assert(result.isSuccess);
+      expect('arguments', result.value[0][0][0][0].value);
+      expect('trim', result.value[0][0][0][2].value);
+      expect('length', result.value[0][0][2][0][1].value);
+      expect(0, result.value[0][1][0][1].value);
+      expect('&&', result.value[1][0][0].value);
+      expect('selections', result.value[1][0][1][0][0][0].value);
+      expect('size', result.value[1][0][1][0][0][2].value);
+      expect('<=', result.value[1][0][1][1][0][0].value);
+      expect(0, result.value[1][0][1][1][0][1].value);
+    });
   });
+
+
+  test('unary expression', () {
+    var parser = dg.build(start: dg.singleParam);
+    var result = parser.parse('!1');
+    assert(result.isSuccess);
+    expect('!', result.value[0].value);
+    expect(1, result.value[1].value);
+  });
+
+  test('tmp test', () {
+    
+    //var parser = DgGrammarDef().build(start: DgGrammarDef().ifStatement);
+    var parser = DgGrammar();
+    var input = sample.SAMPLE1; 
+    var watch = Stopwatch() ..start();
+    var result = parser.parse(input);
+    watch.stop();
+    print('elapsed time ${watch.elapsedMilliseconds}');
+    expect(input.length, result.position);
+  });
+
+  test('test-bed', () {
+    //var input = 'response.put("text",createdBy + " \nLast Modified on " + lastModifiedDate + " \n");';
+    //var input = 'createdBy + " \nLast Modified on " + lastModifiedDate + " \n"';
+    var input = '!1';
+    var parser = dg.build(start: dg.singleParam);
+    var result = parser.parse(input);
+    assert(result.isSuccess);
+
+  });
+
 }
