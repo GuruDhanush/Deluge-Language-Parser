@@ -260,6 +260,14 @@ void main() {
           'createdBy + " \nLast Modified on " + lastModifiedDate + " \n"');
       assert(result.isSuccess);
     });
+
+    test('complex callmember add', (){
+      var parser = dg.build(start: dg.statement);
+      var input = """lastModifiedDate = lastModifiedDate.getDay() + " " + lastModifiedDate.getDate().replaceFirst("(st|nd|rd|th)","").getAlpha() + " '" + year.subText(yearLength - 2,yearLength);""";
+      var result = parser.parse(input);
+      assert(result.isSuccess);
+      expect(input.length, result.position);
+    });
   });
 
   group("call expression", () {
@@ -389,6 +397,13 @@ void main() {
     test('nested with call', () {
       var result = parser.parse('a.b()');
       assert(result.isSuccess);
+    });
+
+    test('sample 1 call expression', (){
+      var input = 'response.put("slides",{"type":"table","title":" ","data":{"headers":["Name","Last Modified"],"rows":tableData}})';
+      var result = parser.parse(input);
+      assert(result.isSuccess);
+      expect(input.length, result.position);
     });
   });
 
@@ -601,6 +616,11 @@ void main() {
       var result = parser.parse('{ "a" : 1, "b" : { "c": 3} }');
       assert(result.isSuccess);
     });
+
+    test('complex', (){
+      var result = parser.parse('{"title":"Delete file " + title,"description":"This file will be deleted and moved to trash in your OneDrive.","buttontext":"Delete"}');
+      assert(result.isSuccess);
+    });
   });
 
   group('list expression', () {
@@ -633,7 +653,61 @@ void main() {
   });
 
 
-    test('tmp test', () {
+  group('info', () {
+    Parser parser;
+    setUp((){
+      parser = dg.build(start: dg.infoExpression);
+    });
+
+    test('normal', (){
+      var input = 'info hello';
+      var result = parser.parse(input);
+      assert(result.isSuccess);
+      var exp = result.value as InfoExpression;
+      expect('hello', (exp.argument as Identifier).name);
+    });
+
+    test('string + identifer', () {
+      var input = 'info "----- " + users;';
+      var result = parser.parse(input);
+      assert(result.isSuccess);
+      var exp = result.value as InfoExpression;
+      var binExp = exp.argument as BinaryExpression;
+      expect('users', (binExp.right as Identifier).name);
+      assert(binExp.left is StringLiteral);
+    });
+
+
+  });
+
+  group('invoke func', () {
+    Parser parser;
+    setUp((){
+      parser = dg.build(start: dg.invokeFunction);
+    });
+
+    test('normal', () {
+      var input = """ 
+      invokeUrl
+      [
+        url: "www.google.com"
+        type: GET
+      ];
+      """;
+      var result = parser.parse(input);
+      assert(result.isSuccess);
+      var exp = result.value as InvokeFunction;
+      expect('invokeUrl', (exp.identifier as Identifier).name);
+      expect('url', ((exp.args[0] as ObjectProperty).key as Identifier).name);
+      expect([ '"', 'www.google.com'.split(''), '"'], ((exp.args[0] as ObjectProperty).value as StringLiteral).value);
+      expect('type', ((exp.args[1] as ObjectProperty).key as Identifier).name);
+      expect('GET', ((exp.args[1] as ObjectProperty).value as Identifier).name);
+
+    });
+  });
+
+
+    test('sample test 1', () {
     var parser = DelugeParser();
     var input = sample.SAMPLE1; 
     var watch = Stopwatch() ..start();
@@ -644,6 +718,32 @@ void main() {
   });
 
 
+  test('sample test 2', (){
+    var parser = DelugeParser();
+    var result = parser.parse(sample.SAMPLE2);
+   
+    assert(result.isSuccess);
+    expect(sample.SAMPLE2.length, result.position);
+
+  });
+
+   test('sample test 3', (){
+    var parser = DelugeParser();
+    var result = parser.parse(sample.SAMPLE3);
+    assert(result.isSuccess);
+    expect(sample.SAMPLE3.length, result.position);
+
+  });
+
+
+  test('cliq post to chat', () {
+    // var input = 'zoho.chat.postToChat(chat.get("id"),message)';
+    var input = 'zoho.chat.postToChat();';
+    var parser = dg.build(start: dg.expressionStatement);
+    var result = parser.parse(input);
+    assert(result.isSuccess);
+    
+  });
 
 
   test('test-bed', () {

@@ -96,29 +96,29 @@ class DelugeParserDefinition extends DgGrammarDef {
         Object exp = MemberExpression(object: id[0], propery: id[2]);
         for (var item in id[3]) {
           exp = MemberExpression(object: exp, propery: item[1]);
-          if(item[2] != null) {
+          if (item[2] != null) {
             exp = CallExpression(callee: exp, arguments: item[2][1]);
           }
-
         }
         return exp;
       });
 
-  Parser expressionStatement() => super
-      .expressionStatement()
-      .map((id) => ExpressionStatement(expression: id));
+  Parser expressionStatement() => super.expressionStatement().map((id) {
+        return ExpressionStatement(expression: id);
+      });
 
-  Parser returnStatement() => super
-      .returnStatement()
-      .map((id) => ReturnStatement(argument: id[1]));
+  Parser returnStatement() =>
+      super.returnStatement().map((id) => ReturnStatement(argument: id[1]));
 
   Parser infoExpression() =>
       super.infoExpression().map((id) => InfoExpression(argument: id[1]));
 
   Parser assignmentExpression() => super.assignmentExpression().map((id) =>
       AssignmentExpression(left: id[0], ooperator: id[1].value, right: id[2]));
-  
-  Parser unaryExpression() => super.unaryExpression().map((id) => UnaryExpression(expression: id[1], ooperator: id[0].value));
+
+  Parser unaryExpression() => super
+      .unaryExpression()
+      .map((id) => UnaryExpression(expression: id[1], ooperator: id[0].value));
 
   Parser ifExpression() => super
       .ifExpression()
@@ -128,7 +128,8 @@ class DelugeParserDefinition extends DgGrammarDef {
       .ifNullExpression()
       .map((id) => IfNullExpression(value: id[2], alternate: id[4]));
 
-  Parser blockStatement() => super.blockStatement().map((id) => BlockStatement(body: id[1]));
+  Parser blockStatement() =>
+      super.blockStatement().map((id) => BlockStatement(body: id[1]));
 
   Parser ifStatement() => super.ifStatement().map((id) {
         var consequent = id[6] != null ? id[6][1] : null;
@@ -136,9 +137,7 @@ class DelugeParserDefinition extends DgGrammarDef {
         for (var i = 0; i < turns.length; i++) {
           var item = turns[i];
           consequent = IfStatement(
-              test: item[3],
-              consequent: item[5],
-              alternate: consequent);
+              test: item[3], consequent: item[5], alternate: consequent);
         }
         return IfStatement(
             test: id[2], consequent: id[4], alternate: consequent);
@@ -147,8 +146,20 @@ class DelugeParserDefinition extends DgGrammarDef {
   Parser forStatement() => super.forStatement().map((id) => ForStatement(
       isIndex: id[2] != null, index: id[3], list: id[5], body: id[6]));
 
-  Parser objectProperty() => super.objectProperty().map((id) => ObjectProperty(key: id[0], value: id[2]));
-  Parser objectExpression() => super.objectExpression().map((id) => ObjectExpression(properties: id[1]));
+  Parser objectProperty() => super
+      .objectProperty()
+      .map((id) => ObjectProperty(key: id[0], value: id[2]));
+  Parser objectExpression() =>
+      super.objectExpression().map((id) => ObjectExpression(properties: id[1]));
 
-  Parser listExpression() => super.listExpression().map((id) => ListExpression(elements: id[1]));
+  Parser listExpression() =>
+      super.listExpression().map((id) => ListExpression(elements: id[1]));
+  Parser invokeFunction() => super.invokeFunction().map((id) {
+        var args = id[2];
+        List<ObjectProperty> arguments = [];
+        for (var arg in args) {
+          arguments.add(ObjectProperty(key: arg[0], value: arg[2]));
+        }
+        return InvokeFunction(identifier: id[0], args: arguments);
+      });
 }

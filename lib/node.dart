@@ -191,3 +191,10 @@ class ListExpression extends Node {
 
   ListExpression({this.elements}) : super();
 }
+
+class InvokeFunction extends Node {
+  Object identifier;
+  List<Object> args;
+
+  InvokeFunction({this.identifier, this.args}) : super();
+}

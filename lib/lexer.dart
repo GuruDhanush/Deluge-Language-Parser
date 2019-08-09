@@ -22,16 +22,22 @@ class DgGrammarDef extends GrammarDefinition {
 
   Parser params() =>
       ref(token, '(') &
-      (ref(binaryExpression) | ref(logicalExpression) | ref(singleParam) | ref(whitespace).star()).separatedBy(ref(token, ','),
-          includeSeparators: false, optionalSeparatorAtEnd: false) &
+      (ref(binaryExpression) |
+              ref(logicalExpression) |
+              ref(singleParam) |
+              ref(whitespace).star())
+          .separatedBy(ref(token, ','),
+              includeSeparators: false, optionalSeparatorAtEnd: false) &
       ref(token, ')');
 
   Parser singleParam() =>
       ref(decimalLiteral) |
       ref(bigintLiteral) |
+      ref(NULL) |
       ref(booleanLiteral) |
       ref(callExpression) |
       ref(memberExpression) |
+      ref(invokeFunction) |
       ref(identifier) |
       ref(stringLiteral) |
       ref(bracketExpression) |
@@ -51,7 +57,9 @@ class DgGrammarDef extends GrammarDefinition {
           .star();
 
   Parser bracketExpression() =>
-      ref(token, '(') & (ref(binaryExpression) | ref(logicalExpression)) & ref(token, ')');
+      ref(token, '(') &
+      (ref(binaryExpression) | ref(logicalExpression)) &
+      ref(token, ')');
 
   Parser logicalExpression() =>
       ref(binaryExpression) &
@@ -73,12 +81,18 @@ class DgGrammarDef extends GrammarDefinition {
       ref(assignmentOperator) &
       (ref(ifExpression) |
           ref(ifNullExpression) |
+          ref(logicalExpression) |
+          ref(binaryExpression) |
           ref(callExpression) |
-          ref(memberExpression) |
-          ref(binaryExpression));
+          ref(memberExpression));
 
   Parser expressionStatement() =>
-      (ref(assignmentExpression) | ref(callExpression) | ref(infoExpression)) &
+      (ref(CONTINUE) |
+          ref(BREAK) |
+          ref(assignmentExpression) |
+          ref(callExpression) |
+          ref(memberExpression) |
+          ref(infoExpression)) &
       ref(token, ';');
 
   Parser statement() =>
@@ -92,7 +106,7 @@ class DgGrammarDef extends GrammarDefinition {
   Parser statements() => ref(statement).star();
 
   Parser infoExpression() =>
-      ref(INFO) & (ref(singleParam) | ref(binaryExpression));
+      ref(INFO) & (ref(binaryExpression) | ref(singleParam));
 
   Parser returnStatement() => ref(RETURN) & ref(singleParam) & ref(token, ';');
 
@@ -115,9 +129,12 @@ class DgGrammarDef extends GrammarDefinition {
       ref(singleParam) &
       ref(token, ')');
 
-  Parser objectProperty() => ref(singleParam) & ref(token, ':') & ref(singleParam);
-  Parser objectBody() =>
-      ref(objectProperty).separatedBy(ref(token, ','), includeSeparators: false);
+  Parser objectProperty() =>
+      ref(singleParam) &
+      ref(token, ':') &
+      (ref(logicalExpression) | ref(binaryExpression) | ref(singleParam));
+  Parser objectBody() => ref(objectProperty)
+      .separatedBy(ref(token, ','), includeSeparators: false);
   Parser listBody() =>
       ref(singleParam).separatedBy(ref(token, ','), includeSeparators: false);
   Parser listExpression() =>
@@ -132,7 +149,8 @@ class DgGrammarDef extends GrammarDefinition {
 
   Parser identifier() => ref(token, IDENTIFIER);
 
-  Parser blockStatement() => ref(token, '{') & ref(statements) & ref(token, '}');
+  Parser blockStatement() =>
+      ref(token, '{') & ref(statements) & ref(token, '}');
 
   Parser ifStatement() =>
       ref(IF) &
@@ -147,10 +165,9 @@ class DgGrammarDef extends GrammarDefinition {
                   ref(binaryExpression) |
                   ref(singleParam)) &
               ref(token, ')') &
-              ref(blockStatement) )
+              ref(blockStatement))
           .star() &
-      (ref(ELSE) & ref(blockStatement))
-          .optional();
+      (ref(ELSE) & ref(blockStatement)).optional();
 
   Parser forStatement() =>
       ref(FOR) &
@@ -160,6 +177,17 @@ class DgGrammarDef extends GrammarDefinition {
       ref(IN) &
       ref(singleParam) &
       ref(blockStatement);
+
+  Parser invokeFunction() =>
+      ref(identifier) &
+      ref(token, '[') &
+      (ref(identifier) &
+              ref(token, ':') &
+              (ref(logicalExpression) |
+                  ref(binaryExpression) |
+                  ref(singleParam)))
+          .star() &
+      ref(token, ']');
 
   //TODO: Move out from grammar to analysis phase?
   // Parser zohoSysVariables() =>
@@ -219,6 +247,7 @@ class DgGrammarDef extends GrammarDefinition {
   Parser ZOHO() => ref(token, 'zoho');
   Parser SENDMAIL() => ref(token, 'sendemail');
   Parser INDEX() => ref(token, 'index');
+  Parser NULL() => ref(token, 'null');
 
   //TODO: Know whether the deluge has  no first digit rule.
   // It always will be  ¯\_(ツ)_/¯ .
@@ -226,6 +255,46 @@ class DgGrammarDef extends GrammarDefinition {
           &
           (ref(LETTER) | ref(DIGIT) | char('_')).star())
       .flatten();
+
+  List<String> months = [
+    'jan',
+    'feb',
+    'mar',
+    'apr',
+    'may',
+    'jun',
+    'jul',
+    'aug',
+    'sep',
+    'oct',
+    'nov',
+    'dec'
+  ];
+
+  Parser MONTH() => ref(token, pattern(months.join('|')));
+  Parser YEAR() => ref(DIGIT).plus();
+  Parser DATE() => ref(DIGIT).plus();
+  Parser HOUR() => ref(DIGIT).star();
+  Parser MINUTE() => ref(DIGIT).star();
+  Parser SECOND() => ref(DIGIT).star();
+
+  Parser DATESEPERATOR() => ref(token, '-');
+  Parser TIMESEPERATOR() => ref(token, ':');
+  Parser DATETIME() =>
+      ref(token, "'") &
+      ref(DATE) &
+      ref(DATESEPERATOR) &
+      ref(MONTH) &
+      ref(DATESEPERATOR) &
+      ref(YEAR) &
+      ref(whitespace().plus) &
+      (ref(HOUR) &
+              ref(TIMESEPERATOR) &
+              ref(MINUTE) &
+              ref(TIMESEPERATOR) &
+              ref(SECOND))
+          .optional() &
+      ref(token, "'");
 
   Parser BOOLEAN() => ref(TRUE) | ref(FALSE);
 
