@@ -162,4 +162,10 @@ class DelugeParserDefinition extends DgGrammarDef {
         }
         return InvokeFunction(identifier: id[0], args: arguments);
       });
+
+  Parser statement() => super.statement().map((id) {
+
+   print(id);
+   return id;
+  });
 }

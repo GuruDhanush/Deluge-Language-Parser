@@ -1,4 +1,5 @@
 import 'package:DelugeDartParser/node.dart';
+import 'package:petitparser/debug.dart';
 import 'package:petitparser/petitparser.dart';
 import 'package:test/test.dart';
 import 'package:DelugeDartParser/parser.dart';
@@ -721,7 +722,7 @@ void main() {
   test('sample test 2', (){
     var parser = DelugeParser();
     var result = parser.parse(sample.SAMPLE2);
-   
+    
     assert(result.isSuccess);
     expect(sample.SAMPLE2.length, result.position);
 
@@ -741,6 +742,7 @@ void main() {
     var input = 'zoho.chat.postToChat();';
     var parser = dg.build(start: dg.expressionStatement);
     var result = parser.parse(input);
+    profile(parser);
     assert(result.isSuccess);
     
   });
@@ -752,5 +754,29 @@ void main() {
     var parser = dg.build(start: dg.callExpression);
     var result = parser.parse(input);
     assert(result.isSuccess);
+  });
+
+
+
+  group('statement error', () {
+    
+    Parser parser;
+    setUp((){
+     parser = DelugeParser();
+    });
+
+    test('single error', (){
+      var result = parser.parse('id = d;');
+      
+      assert(result.isFailure);
+    });
+  });
+
+
+  test('test contin', (){
+    //var parser = trace(DelugeParser());
+    var parser = trace(dg.build(start: dg.booleanLiteral));
+    parser.parse('true ');
+    
   });
 }
