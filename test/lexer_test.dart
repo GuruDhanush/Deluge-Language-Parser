@@ -337,14 +337,16 @@ void main() {
       var result = parser.parse(input);
       print(result.value);
       assert(result.isSuccess);
-    },skip: 'yet to be supported');
+    });
+    //,skip: 'yet to be supported');
 
     test('swiggly empty list', () {
       var input = '{}';
       var result = parser.parse(input);
       print(result.value);
       assert(result.isSuccess);
-    },skip: 'yet to be supported');
+    });
+    //,skip: 'yet to be supported');
 
     test('block empty list', () {
       var input = '[]';
@@ -352,6 +354,22 @@ void main() {
       print(result.value);
       assert(result.isSuccess);
     });
+
+    test('differentiate list and map - list', () {
+      var parser =  dg.build(start: dg.singleParam).end();
+      var result = parser.parse('{1,2,3}');
+      assert(result.isSuccess);
+    });
+
+    test('differentiate list and map - map', () {
+      var parser =  dg.build(start: dg.singleParam).end();
+      var result = parser.parse('{"name": "jane", "age": 21}');
+      assert(result.isSuccess);
+    });
+    
+
+
+
   });
 
   group("line", () {

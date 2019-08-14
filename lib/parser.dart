@@ -168,4 +168,10 @@ class DelugeParserDefinition extends DgGrammarDef {
    print(id);
    return id;
   });
+
+  //Parser error() => super.error().map((id) => Error());
+}
+
+class Error {
+  String error = 'error';
 }

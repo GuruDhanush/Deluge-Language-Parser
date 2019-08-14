@@ -138,7 +138,8 @@ class DgGrammarDef extends GrammarDefinition {
   Parser listBody() =>
       ref(singleParam).separatedBy(ref(token, ','), includeSeparators: false);
   Parser listExpression() =>
-      ref(token, '[') & ref(listBody).optional() & ref(token, ']');
+      ref(token, '[') & ref(listBody).optional() & ref(token, ']') |
+      ref(token, '{') & ref(listBody).optional() & ref(token, '}');
   Parser objectExpression() =>
       ref(token, '{') & ref(objectBody).optional() & ref(token, '}');
 
@@ -302,6 +303,7 @@ class DgGrammarDef extends GrammarDefinition {
       .flatten()
       .trim()
       .map(int.parse);
+  
 
   Parser DECIMAL() => (ref(prefixOperator).optional() &
               (ref(DIGIT).plus() & char('.') & ref(DIGIT).plus()) //123.45
@@ -317,7 +319,7 @@ class DgGrammarDef extends GrammarDefinition {
   Parser DIGIT() => digit();
 
   Parser NEWLINE() => pattern('\n\r');
-  //TODO: potential perf issues with starGreedy
+  //TODO: potential perf issues with starGreedy otherwise stops after finding \n
   Parser SINGLELINE_COMMENT() =>
       char('/') &
       char('/') &

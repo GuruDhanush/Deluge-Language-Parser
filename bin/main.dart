@@ -28,9 +28,9 @@ main(List<String> arguments) {
 
   //var dg = DelugeParserDefinition();
   //var parser = modTrace(dg.build(start: dg.bigintLiteral));
-  var parser = (digit().plus() | failure('Integer expected'));
-  parser = modTrace( parser);
-  var result = parser.parse('a123 ');
+  var parser = (digit().plus() & char(';'));
+  var p = modTrace(parser);
+  var result = p.parse('12a3;');
   
   
 
@@ -39,6 +39,7 @@ main(List<String> arguments) {
 Parser modTrace(Parser parser) {
   var level = 0;
  return transformParser(parser, (each) {
+   //print(each);
     return ContinuationParser(each, (continuation, context) {
       print('${'  ' * level}$each');
       level++;

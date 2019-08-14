@@ -17,6 +17,13 @@ void main() {
       expect(1, (result.value as BigIntLiteral).value);
     });
 
+    test('Bigint with error', (){
+      var parser = dg.build(start: dg.bigintLiteral);
+      var result = parser.parse('1a');
+
+      expect(true, result.isSuccess);
+    });
+
     test('Decimal', () {
       var parser = dg.build(start: dg.decimalLiteral);
       var result = parser.parse('1.2');
@@ -610,7 +617,7 @@ void main() {
     
     Parser parser;
     setUp((){
-      parser = dg.build(start: dg.objectExpression);
+      parser = dg.build(start: dg.objectExpression).end();
     });
 
     test('normal', () {
@@ -622,19 +629,57 @@ void main() {
       var result = parser.parse('{"title":"Delete file " + title,"description":"This file will be deleted and moved to trash in your OneDrive.","buttontext":"Delete"}');
       assert(result.isSuccess);
     });
+
+    test('with global map', () {
+      var parser = dg.build(start: dg.singleParam).end();
+      var result = parser.parse('{"name":"Jane", "age": 21, "stocks": {1,2}}');
+      assert(result.isSuccess);
+      var props = (result.value as ObjectExpression).properties.cast<ObjectProperty>(); //  as List<ObjectProperty>;
+      expect("name".split(''), (props[0].key as StringLiteral).value[1]);
+      expect("Jane".split(''), (props[0].value as StringLiteral).value[1]);
+
+      expect("age".split(''), (props[1].key as StringLiteral).value[1]);
+      expect(21, (props[1].value as BigIntLiteral).value);
+
+      expect("stocks".split(''), (props[2].key as StringLiteral).value[1]);
+      var listValElements = (props[2].value as ListExpression).elements.cast<BigIntLiteral>(); // as List<BigIntLiteral>;
+      expect(1, listValElements[0].value);
+      expect(2, listValElements[1].value);
+    });
+
   });
 
   group('list expression', () {
     
     Parser parser;
     setUp((){
-      parser = dg.build(start: dg.listExpression);
+      parser = dg.build(start: dg.listExpression).end();
     });
 
-    test('normal', () {
+    test('with []', () {
       var result = parser.parse('[ 1, { "a": 2} ]');
       assert(result.isSuccess);
     });
+
+    
+    test('with {}', () {
+      var result = parser.parse('{ 1, { "a": 2} }');
+      assert(result.isSuccess);
+    });
+
+    test('with global list', () {
+      var parser = dg.build(start: dg.singleParam).end();
+      var result = parser.parse('{1, {2}, {"name":"Jane"}}');
+      assert(result.isSuccess);
+      var exp = result.value as ListExpression;
+      expect(1, (exp.elements[0] as BigIntLiteral).value);
+      expect(2, ((exp.elements[1] as ListExpression).elements[0] as BigIntLiteral).value);
+      var exp2 = (exp.elements[2] as ObjectExpression).properties[0] as ObjectProperty;
+      expect('name'.split(''), (exp2.key as StringLiteral).value[1] );
+      expect('Jane'.split(''), (exp2.value as StringLiteral).value[1]);
+    });
+
+   
   });
 
   group('return statement', (){
@@ -766,7 +811,7 @@ void main() {
     });
 
     test('single error', (){
-      var result = parser.parse('id = d;');
+      var result = parser.parse('id = d');
       
       assert(result.isFailure);
     });
