@@ -164,10 +164,18 @@ class DelugeParserDefinition extends DgGrammarDef {
       });
 
   Parser statement() => super.statement().map((id) {
+        print(id);
+        return id;
+      });
 
-   print(id);
-   return id;
-  });
+  //TODO: add data type declarations to property
+  Parser listDeclaration() => super
+      .listDeclaration()
+      .map((id) => CallExpression(callee: Identifier(id[0].value), arguments: []..add(id[3])));
+
+  Parser collectionDeclaration() => super
+      .collectionDeclaration()
+      .map((id) => CallExpression(callee: Identifier(id[0].value), arguments: []..add(id[2])));
 
   //Parser error() => super.error().map((id) => Error());
 }

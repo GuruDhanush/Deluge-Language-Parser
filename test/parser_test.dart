@@ -682,6 +682,38 @@ void main() {
    
   });
 
+  group('List Declaration', () {
+    Parser parser;
+    setUp((){
+      parser = dg.build(start: dg.singleParam).end();
+    });
+
+    test('normal', () {
+      var result = parser.parse('List({1,2})');
+      assert(result.isSuccess);
+    });
+    
+  });
+
+  
+  group('Collection Declaration', () {
+    Parser parser;
+    setUp((){
+      parser = dg.build(start: dg.singleParam).end();
+    });
+
+    test('with list', () {
+      var result = parser.parse('Collection(1,2)');
+      assert(result.isSuccess);
+    });
+    
+    
+    test('with map', () {
+      var result = parser.parse('Collection("Name": "Jane", "Age": 21)');
+      assert(result.isSuccess);
+    });
+  });
+
   group('return statement', (){
 
     Parser parser;

@@ -93,7 +93,7 @@ void main() {
     Parser parser;
 
     setUp(() {
-      parser = dg.build(start: dg.STRING);
+      parser = dg.build(start: dg.STRING).end();
     });
 
     test("normal", () {
@@ -113,8 +113,7 @@ void main() {
 
     test('string inner content - not accept', () {
       var result = parser.parse('"""');
-      assert(result.isSuccess);
-      expect(0, result.value[1].length);
+      assert(result.isFailure);
     });
 
     test('string inner content - accept', () {
@@ -130,6 +129,20 @@ void main() {
       assert(result.isSuccess);
       expect(input.length, result.position);
       
+    });
+
+    test('with '' quotes', () {
+      var input = "'Hello World'";
+      var result = parser.parse(input);
+      assert(result.isSuccess);
+      expect(input.split('').sublist(1, input.length-1), result.value[1]);
+    });
+
+    test('with '' quotes & escape chars', () {
+      var input = "'Hello \\' \n World'";
+      var result = parser.parse(input);
+      assert(result.isSuccess);
+      expect(input.length, result.position);
     });
   });
 
@@ -318,6 +331,53 @@ void main() {
   //     print(result.message);
   //   });
   // });
+
+  group('list declaration', () {
+    Parser parser;
+    setUp((){
+     parser = dg.build(start: dg.listDeclaration).end();
+    });
+
+    test('empty list', () {
+      var result = parser.parse('List()');
+      assert(result.isSuccess);
+    });
+
+    test('list with an string data type', () {
+      var result = parser.parse('List:String()');
+      assert(result.isSuccess);
+    });
+
+    test('with an list in constructor', () {
+      var result = parser.parse('List:Int({1,2,3})');
+      assert(result.isSuccess);
+    });
+  });
+
+   group('Collection declaration', () {
+    Parser parser;
+    setUp((){
+     parser = dg.build(start: dg.collectionDeclaration).end();
+    });
+
+    test('empty collection', () {
+      var result = parser.parse('Collection()');
+      assert(result.isSuccess);
+    });
+
+    test('collection with list', () {
+      var result = parser.parse('Collection(1,2,3)');
+      assert(result.isSuccess);
+    });
+
+    test('collection with an map', () {
+      var result = parser.parse('Collection("Name": "Jane", "Age": 21)');
+      assert(result.isSuccess);
+    });
+  });
+
+
+
 
   group("list expression", () {
     Parser parser;

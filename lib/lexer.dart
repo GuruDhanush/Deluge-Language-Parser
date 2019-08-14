@@ -1,3 +1,4 @@
+import 'package:DelugeDartParser/node.dart';
 import 'package:petitparser/petitparser.dart';
 
 class DgGrammar extends GrammarParser {
@@ -35,6 +36,8 @@ class DgGrammarDef extends GrammarDefinition {
       ref(bigintLiteral) |
       ref(NULL) |
       ref(booleanLiteral) |
+      ref(listDeclaration) |
+      ref(collectionDeclaration) |
       ref(callExpression) |
       ref(memberExpression) |
       ref(invokeFunction) |
@@ -229,6 +232,27 @@ class DgGrammarDef extends GrammarDefinition {
   Parser conditionalOperator() => ref(token, '&&') | ref(token, '||');
   Parser prefixConditionalOperator() => ref(token, '!');
 
+
+  Parser collectionDeclaration() =>
+    ref(COLLECTION) &
+      ref(token, '(') &
+        (ref(objectBody) | ref(listBody)).optional() &
+      ref(token, ')');
+
+  Parser listDeclaration() =>
+      ref(LIST) &
+      (ref(token, ':') & ref(listDataTypes)).optional() &
+      ref(token, '(') &
+      ref(listExpression).optional() &
+      ref(token, ')');
+
+  Parser listDataTypes() =>
+      ref(token, 'String') |
+      ref(token, 'Int') |
+      ref(token, 'Date') |
+      ref(token, 'Bool') |
+      ref(token, 'Float');
+
   //
   // Keyword definitions
   //
@@ -246,9 +270,10 @@ class DgGrammarDef extends GrammarDefinition {
   Parser FALSE() => ref(token, 'false');
   Parser NOT() => ref(token, 'not');
   Parser ZOHO() => ref(token, 'zoho');
-  Parser SENDMAIL() => ref(token, 'sendemail');
   Parser INDEX() => ref(token, 'index');
   Parser NULL() => ref(token, 'null');
+  Parser LIST() => ref(token, stringIgnoreCase('list'));
+  Parser COLLECTION() => ref(token, stringIgnoreCase('collection'));
 
   //TODO: Know whether the deluge has  no first digit rule.
   // It always will be  ¯\_(ツ)_/¯ .
@@ -257,6 +282,13 @@ class DgGrammarDef extends GrammarDefinition {
           (ref(LETTER) | ref(DIGIT) | char('_')).star())
       .flatten();
 
+  ///
+  ///Date time start
+  /// TODO: (Issue: 1) Take more info about '' strings
+  /// strings in '' are also taken as valid input in the runtime, though the documentation
+  /// says other wise. From https://www.zoho.com/creator/newhelp/script/deluge-datatypes.html,
+  /// "The specified input must be enclosed in double quotes". In the mean time all the
+  /// datetime type is treated as string and no validations are performed.
   List<String> months = [
     'jan',
     'feb',
@@ -297,13 +329,16 @@ class DgGrammarDef extends GrammarDefinition {
           .optional() &
       ref(token, "'");
 
+  ///
+  ///Date time end
+  ///
+
   Parser BOOLEAN() => ref(TRUE) | ref(FALSE);
 
   Parser BIGINT() => (ref(prefixOperator).optional() & ref(DIGIT).plus())
       .flatten()
       .trim()
       .map(int.parse);
-  
 
   Parser DECIMAL() => (ref(prefixOperator).optional() &
               (ref(DIGIT).plus() & char('.') & ref(DIGIT).plus()) //123.45
@@ -333,10 +368,20 @@ class DgGrammarDef extends GrammarDefinition {
       char('*') &
       char('/');
 
-  Parser STRING() => char('"') & ref(CHAR_PRIMITIVE).star() & char('"');
+  Parser STRING() =>
+      (char('"') & ref(CHAR_PRIMITIVE_DOUBLE_QUOTE).star() & char('"')) |
+      (char("'") & ref(CHAR_PRIMITIVE_SINGLEQUOTE).star() & char("'"));
 
-  Parser CHAR_PRIMITIVE() =>
-      (char('\\') & pattern(escapeChars.join())).flatten() | pattern('^"\\');
+  Parser CHAR_PRIMITIVE_SINGLEQUOTE() =>
+      (char('\\') & pattern(escapeCharsSingleQuote.join())).flatten() |
+      pattern(['^', "'", '\\'].join());
 
-  List escapeChars = ['"', '\\', '/', 'b', 'f', 'n', 'r', 't'];
+  Parser CHAR_PRIMITIVE_DOUBLE_QUOTE() =>
+      (char('\\') & pattern(escapeCharsDoubleQuote.join())).flatten() |
+      pattern(['^', '"', '\\'].join());
+
+  //TODO: escape chars for ' also;
+  //List escapeChars = ['"', '\\', '/', 'b', 'f', 'n', 'r', 't'];
+  List escapeCharsSingleQuote = ["'", '\\', '/', 'b', 'f', 'n', 'r', 't'];
+  List escapeCharsDoubleQuote = ['"', '\\', '/', 'b', 'f', 'n', 'r', 't'];
 }
