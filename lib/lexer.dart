@@ -34,7 +34,7 @@ class DgGrammarDef extends GrammarDefinition {
   Parser singleParam() =>
       ref(decimalLiteral) |
       ref(bigintLiteral) |
-      ref(NULL) |
+      ref(token, NULL) |
       ref(booleanLiteral) |
       ref(listDeclaration) |
       ref(collectionDeclaration) |
@@ -46,18 +46,17 @@ class DgGrammarDef extends GrammarDefinition {
       ref(bracketExpression) |
       ref(listExpression) |
       ref(objectExpression) |
-      ref(token, '(') & ref(singleParam) & ref(token, ')') |
+      ref(token, ref(token, '(') & ref(singleParam) & ref(token, ')')) |
       ref(unaryExpression);
 
   Parser unaryExpression() => ref(prefixConditionalOperator) & ref(singleParam);
 
-  Parser binaryExpression() =>
-      (ref(singleParam)) &
-      ((ref(arithemticOperator) |
-                  ref(equalityOperator) |
-                  ref(relationalOperator)) &
-              (ref(singleParam)))
-          .star();
+  Parser binaryExpression() => ref(singleParam) &
+          ((ref(arithemticOperator) |
+                      ref(equalityOperator) |
+                      ref(relationalOperator)) &
+                  (ref(singleParam)))
+              .star();
 
   Parser bracketExpression() =>
       ref(token, '(') &
@@ -99,12 +98,18 @@ class DgGrammarDef extends GrammarDefinition {
       ref(token, ';');
 
   Parser statement() =>
-      ref(token, SINGLELINE_COMMENT) |
-      ref(token, MULTILINE_COMMENT) |
+      ref(singleLineComment) |
+      ref(multiLineComment) |
       ref(returnStatement) |
       ref(ifStatement) |
       ref(forStatement) |
-      ref(expressionStatement);
+      ref(expressionStatement) |
+      ref(lineError);
+
+  //TODO: fix the case where it fails when the error is in last line
+  Parser lineError() =>
+      noneOf('\n\r}').plus() &
+      anyIn('\n\r'); //  pattern('^\n\r').star() & pattern('\n\r');
 
   Parser statements() => ref(statement).star();
 
@@ -232,11 +237,10 @@ class DgGrammarDef extends GrammarDefinition {
   Parser conditionalOperator() => ref(token, '&&') | ref(token, '||');
   Parser prefixConditionalOperator() => ref(token, '!');
 
-
   Parser collectionDeclaration() =>
-    ref(COLLECTION) &
+      ref(COLLECTION) &
       ref(token, '(') &
-        (ref(objectBody) | ref(listBody)).optional() &
+      (ref(objectBody) | ref(listBody)).optional() &
       ref(token, ')');
 
   Parser listDeclaration() =>
@@ -252,6 +256,9 @@ class DgGrammarDef extends GrammarDefinition {
       ref(token, 'Date') |
       ref(token, 'Bool') |
       ref(token, 'Float');
+  
+  Parser singleLineComment() => ref(token, SINGLELINE_COMMENT);
+  Parser multiLineComment() => ref(token, MULTILINE_COMMENT);
 
   //
   // Keyword definitions

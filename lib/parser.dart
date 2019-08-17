@@ -9,37 +9,34 @@ class DelugeParser extends GrammarParser {
 }
 
 class DelugeParserDefinition extends DgGrammarDef {
-  Parser identifier() => super.identifier().map((id) => Identifier(id.value));
+  Parser identifier() => super.identifier().map(
+      (id) => Identifier.fromId(id: id, name: id.value, rawValue: id.input));
 
-  Parser bigintLiteral() => super
-      .bigintLiteral()
-      .map((id) => BigIntLiteral(value: id.value, raw: id.input));
+  Parser bigintLiteral() => super.bigintLiteral().map(
+      (id) => BigIntLiteral.fromId(value: id.value, raw: id.input, id: id));
 
-  Parser decimalLiteral() => super
-      .decimalLiteral()
-      .map((id) => DecimalLiteral(value: id.value, raw: id.input));
+  Parser decimalLiteral() => super.decimalLiteral().map(
+      (id) => DecimalLiteral.fromId(value: id.value, raw: id.input, id: id));
 
-  Parser stringLiteral() => super
-      .stringLiteral()
-      .map((id) => StringLiteral(value: id.value, raw: id.input));
+  Parser stringLiteral() => super.stringLiteral().map(
+      (id) => StringLiteral.fromId(value: id.value, raw: id.input, id: id));
 
-  Parser booleanLiteral() => super
-      .booleanLiteral()
-      .map((id) => BooleanLiteral(value: id.value == 'true', raw: id.input));
+  Parser booleanLiteral() => super.booleanLiteral().map((id) =>
+      BooleanLiteral.fromId(value: id.value == 'true', raw: id.input, id: id));
 
-  Parser binaryExpression() => super.binaryExpression().map((id) {
-        var _tmpList = id[1];
+  Parser binaryExpression() => super.binaryExpression().token().map((id) {
+        var _tmpList = id.value[1];
 
         //case where we get an binary expression and next tokens tend to be zero.
         //useful in () expressions
-        if (_tmpList.length == 0) return id[0];
+        if (_tmpList.length == 0) return id.value[0];
 
-        var bin = BinaryExpression(left: id[0]);
+        var bin = BinaryExpression.fromId(left: id.value[0], id: id);
 
         for (var item in _tmpList) {
           if (item.length > 0) {
             if (bin.right != null) {
-              bin = BinaryExpression(left: bin);
+              bin = BinaryExpression.fromId(left: bin, id: id);
             }
             bin.oopertor = item[0].value;
             bin.right = item[1];
@@ -48,19 +45,19 @@ class DelugeParserDefinition extends DgGrammarDef {
         return bin;
       });
 
-  Parser logicalExpression() => super.logicalExpression().map((id) {
-        var _tmpList = id[1];
+  Parser logicalExpression() => super.logicalExpression().token().map((id) {
+        var _tmpList = id.value[1];
 
         //case where we get an logical expression and next tokens tend to be zero.
         //useful in () expressions
-        if (_tmpList.length == 0) return id[0];
+        if (_tmpList.length == 0) return id.value[0];
 
-        var bin = LogicalExpression(left: id[0]);
+        var bin = LogicalExpression.fromId(left: id.value[0], id: id);
 
         for (var item in _tmpList) {
           if (item.length > 0) {
             if (bin.right != null) {
-              bin = LogicalExpression(left: bin);
+              bin = LogicalExpression.fromId(left: bin, id: id);
             }
             bin.oopertor = item[0].value;
             bin.right = item[1];
@@ -71,115 +68,156 @@ class DelugeParserDefinition extends DgGrammarDef {
 
   Parser bracketExpression() => super
       .bracketExpression()
-      .map((id) => id[1]..extra.putIfAbsent('parentise', () => true));
+      .token()
+      .map((id) => id.value[1]..extra.putIfAbsent('parentise', () => true));
 
-  //Parser callExpression() => super.callExpression().map((id) => CallExpression(callee: id[0], arguments: id[1][1]));
-  Parser callExpression() => super.callExpression().map((id) {
-        var args = id[1][1];
+  Parser callExpression() => super.callExpression().token().map((id) {
+        var args = id.value[1][1];
         var params = [];
         for (var arg in args) {
           params.add(arg);
         }
-        Object exp = CallExpression(callee: id[0], arguments: params);
-        for (var item in id[2]) {
-          exp = MemberExpression(object: exp, propery: item[1]);
+        Object exp = CallExpression.fromId(
+            callee: id.value[0], arguments: params, id: id);
+        for (var item in id.value[2]) {
+          exp = MemberExpression.fromId(object: exp, propery: item[1], id: id);
 
           //dealing with call expression
           if (item[2] != null) {
-            exp = CallExpression(callee: exp, arguments: item[2][1]);
+            exp = CallExpression.fromId(
+                callee: exp, arguments: item[2][1], id: id);
           }
         }
         return exp;
       });
 
-  Parser memberExpression() => super.memberExpression().map((id) {
-        Object exp = MemberExpression(object: id[0], propery: id[2]);
-        for (var item in id[3]) {
-          exp = MemberExpression(object: exp, propery: item[1]);
+  Parser memberExpression() => super.memberExpression().token().map((id) {
+        Object exp = MemberExpression.fromId(
+            object: id.value[0], propery: id.value[2], id: id);
+        for (var item in id.value[3]) {
+          exp = MemberExpression.fromId(object: exp, propery: item[1], id: id);
           if (item[2] != null) {
-            exp = CallExpression(callee: exp, arguments: item[2][1]);
+            exp = CallExpression.fromId(
+                callee: exp, arguments: item[2][1], id: id);
           }
         }
         return exp;
       });
 
-  Parser expressionStatement() => super.expressionStatement().map((id) {
-        return ExpressionStatement(expression: id);
+  Parser expressionStatement() => super.expressionStatement().token().map((id) {
+        return ExpressionStatement.fromId(expression: id.value, id: id);
       });
+  
+  Parser singleLineComment() => super.singleLineComment().map((id) => CommentLine.fromId(value: id.value[2], id: id));
+  Parser multiLineComment() => super.multiLineComment().map((id) => CommentLine.fromId(value: id.value[2], id: id));
 
-  Parser returnStatement() =>
-      super.returnStatement().map((id) => ReturnStatement(argument: id[1]));
 
-  Parser infoExpression() =>
-      super.infoExpression().map((id) => InfoExpression(argument: id[1]));
+  Parser returnStatement() => super
+      .returnStatement()
+      .token()
+      .map((id) => ReturnStatement.fromId(argument: id.value[1], id: id));
 
-  Parser assignmentExpression() => super.assignmentExpression().map((id) =>
-      AssignmentExpression(left: id[0], ooperator: id[1].value, right: id[2]));
+  Parser infoExpression() => super
+      .infoExpression()
+      .token()
+      .map((id) => InfoExpression.fromId(argument: id.value[1], id: id));
 
-  Parser unaryExpression() => super
-      .unaryExpression()
-      .map((id) => UnaryExpression(expression: id[1], ooperator: id[0].value));
+  Parser assignmentExpression() => super.assignmentExpression().token().map(
+      (id) => AssignmentExpression.fromId(
+          left: id.value[0],
+          ooperator: id.value[1].value,
+          right: id.value[2],
+          id: id));
 
-  Parser ifExpression() => super
-      .ifExpression()
-      .map((id) => IfExpression(test: id[2], value: id[4], alternate: id[6]));
+  Parser unaryExpression() =>
+      super.unaryExpression().token().map((id) => UnaryExpression.fromId(
+          expression: id.value[1], ooperator: id.value[0].value, id: id));
 
-  Parser ifNullExpression() => super
-      .ifNullExpression()
-      .map((id) => IfNullExpression(value: id[2], alternate: id[4]));
+  Parser ifExpression() =>
+      super.ifExpression().token().map((id) => IfExpression.fromId(
+          test: id.value[2],
+          value: id.value[4],
+          alternate: id.value[6],
+          id: id));
 
-  Parser blockStatement() =>
-      super.blockStatement().map((id) => BlockStatement(body: id[1]));
+  Parser ifNullExpression() =>
+      super.ifNullExpression().token().map((id) => IfNullExpression.fromId(
+          value: id.value[2], alternate: id.value[4], id: id));
 
-  Parser ifStatement() => super.ifStatement().map((id) {
-        var consequent = id[6] != null ? id[6][1] : null;
-        var turns = id[5];
+  Parser blockStatement() => super
+      .blockStatement()
+      .token()
+      .map((id) => BlockStatement.fromId(body: id.value[1], id: id));
+
+  Parser ifStatement() => super.ifStatement().token().map((id) {
+        var consequent = id.value[6] != null ? id.value[6][1] : null;
+        var turns = id.value[5];
         for (var i = 0; i < turns.length; i++) {
           var item = turns[i];
-          consequent = IfStatement(
-              test: item[3], consequent: item[5], alternate: consequent);
+          consequent = IfStatement.fromId(
+              test: item[3],
+              consequent: item[5],
+              alternate: consequent,
+              id: id);
         }
-        return IfStatement(
-            test: id[2], consequent: id[4], alternate: consequent);
+        return IfStatement.fromId(
+            test: id.value[2],
+            consequent: id.value[4],
+            alternate: consequent,
+            id: id);
       });
 
-  Parser forStatement() => super.forStatement().map((id) => ForStatement(
-      isIndex: id[2] != null, index: id[3], list: id[5], body: id[6]));
+  Parser forStatement() =>
+      super.forStatement().token().map((id) => ForStatement.fromId(
+          isIndex: id.value[2] != null,
+          index: id.value[3],
+          list: id.value[5],
+          body: id.value[6],
+          id: id));
 
-  Parser objectProperty() => super
-      .objectProperty()
-      .map((id) => ObjectProperty(key: id[0], value: id[2]));
-  Parser objectExpression() =>
-      super.objectExpression().map((id) => ObjectExpression(properties: id[1]));
+  Parser objectProperty() => super.objectProperty().token().map((id) =>
+      ObjectProperty.fromId(key: id.value[0], value: id.value[2], id: id));
+  Parser objectExpression() => super
+      .objectExpression()
+      .token()
+      .map((id) => ObjectExpression.fromId(properties: id.value[1], id: id));
 
-  Parser listExpression() =>
-      super.listExpression().map((id) => ListExpression(elements: id[1]));
-  Parser invokeFunction() => super.invokeFunction().map((id) {
-        var args = id[2];
+  Parser listExpression() => super
+      .listExpression()
+      .token()
+      .map((id) => ListExpression.fromId(elements: id.value[1], id: id));
+  Parser invokeFunction() => super.invokeFunction().token().map((id) {
+        var args = id.value[2];
         List<ObjectProperty> arguments = [];
         for (var arg in args) {
-          arguments.add(ObjectProperty(key: arg[0], value: arg[2]));
+          arguments
+              .add(ObjectProperty.fromId(key: arg[0], value: arg[2], id: id));
         }
-        return InvokeFunction(identifier: id[0], args: arguments);
+        return InvokeFunction.fromId(
+            identifier: id.value[0], args: arguments, id: id);
       });
 
+  Parser lineError() => super
+      .lineError()
+      .token()
+      .map((id) => LineError.fromId(error: 'Line error', id: id));
+
   Parser statement() => super.statement().map((id) {
-        print(id);
         return id;
       });
 
   //TODO: add data type declarations to property
-  Parser listDeclaration() => super
-      .listDeclaration()
-      .map((id) => CallExpression(callee: Identifier(id[0].value), arguments: []..add(id[3])));
+  Parser listDeclaration() =>
+      super.listDeclaration().token().map((id) => CallExpression.fromId(
+          callee: Identifier(id.value[0].value),
+          arguments: []..add(id.value[3]),
+          id: id));
 
-  Parser collectionDeclaration() => super
-      .collectionDeclaration()
-      .map((id) => CallExpression(callee: Identifier(id[0].value), arguments: []..add(id[2])));
+  Parser collectionDeclaration() =>
+      super.collectionDeclaration().token().map((id) => CallExpression.fromId(
+          callee: Identifier(id.value[0].value),
+          arguments: []..add(id.value[2]),
+          id: id));
 
   //Parser error() => super.error().map((id) => Error());
-}
-
-class Error {
-  String error = 'error';
 }

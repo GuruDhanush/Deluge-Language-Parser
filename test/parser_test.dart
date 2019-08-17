@@ -17,7 +17,7 @@ void main() {
       expect(1, (result.value as BigIntLiteral).value);
     });
 
-    test('Bigint with error', (){
+    test('Bigint with error', () {
       var parser = dg.build(start: dg.bigintLiteral);
       var result = parser.parse('1a');
 
@@ -53,10 +53,30 @@ void main() {
       var result = parser.parse('"Hello"');
 
       expect(true, result.isSuccess);
-      expect('"Hello"', (result.value as StringLiteral).value);
-    }, skip: 'TODO: yet to decide on string parser output');
+      expect('Hello'.split(''), (result.value as StringLiteral).value[1]);
+    });
   });
 
+  group('comments', () {
+    
+    test('single-line comment', () {
+      var parser = dg.build(start: dg.singleLineComment);
+      var input = "//Hello ;";
+      var result = parser.parse(input);
+      assert(result.isSuccess);
+    });
+
+    
+    test('multi-line comment', () {
+      var parser = dg.build(start: dg.multiLineComment).end();
+      var input = """/*
+        Hello
+      */
+      """;
+      var result = parser.parse(input);
+      assert(result.isSuccess);
+    });
+  });
   group('arithmetic', () {
     Parser parser;
     setUp(() {
@@ -267,11 +287,18 @@ void main() {
       var result = parser.parse(
           'createdBy + " \nLast Modified on " + lastModifiedDate + " \n"');
       assert(result.isSuccess);
+      var exp = result.value as BinaryExpression;
+      assert((exp.right as StringLiteral).value != null);
+      var lexp = exp.left as BinaryExpression;
+      assert((lexp.left as BinaryExpression) != null);
+      assert((lexp.right as Identifier).name != null);
+  
     });
 
-    test('complex callmember add', (){
+    test('complex callmember add', () {
       var parser = dg.build(start: dg.statement);
-      var input = """lastModifiedDate = lastModifiedDate.getDay() + " " + lastModifiedDate.getDate().replaceFirst("(st|nd|rd|th)","").getAlpha() + " '" + year.subText(yearLength - 2,yearLength);""";
+      var input =
+          """lastModifiedDate = lastModifiedDate.getDay() + " " + lastModifiedDate.getDate().replaceFirst("(st|nd|rd|th)","").getAlpha() + " '" + year.subText(yearLength - 2,yearLength);""";
       var result = parser.parse(input);
       assert(result.isSuccess);
       expect(input.length, result.position);
@@ -327,7 +354,7 @@ void main() {
       expect(1.1, (callExp.arguments[1] as DecimalLiteral).value); //1.1
 
       expect(StringLiteral, callExp.arguments[2].runtimeType); //type
-      expect([ '"', 'hello'.split(''), '"'],
+      expect(['"', 'hello'.split(''), '"'],
           (callExp.arguments[2] as StringLiteral).value); //hello
 
       expect(BooleanLiteral, callExp.arguments[3].runtimeType); //type
@@ -407,8 +434,9 @@ void main() {
       assert(result.isSuccess);
     });
 
-    test('sample 1 call expression', (){
-      var input = 'response.put("slides",{"type":"table","title":" ","data":{"headers":["Name","Last Modified"],"rows":tableData}})';
+    test('sample 1 call expression', () {
+      var input =
+          'response.put("slides",{"type":"table","title":" ","data":{"headers":["Name","Last Modified"],"rows":tableData}})';
       var result = parser.parse(input);
       assert(result.isSuccess);
       expect(input.length, result.position);
@@ -455,7 +483,7 @@ void main() {
     test('nested with member', () {
       var result = parser.parse('a.b.c();');
       assert(result.isSuccess);
-    },skip: 'failing due to ongoing issue on member an call expression clash in expression statement');
+    });
 
     test('nested out with member', () {
       var result = parser.parse('a.b().c;');
@@ -488,12 +516,10 @@ void main() {
     });
   });
 
-
   group('block statement', () {
-    
     Parser parser;
-    setUp((){
-     parser = dg.build(start: dg.blockStatement);
+    setUp(() {
+      parser = dg.build(start: dg.blockStatement);
     });
 
     test('normal', () {
@@ -505,7 +531,6 @@ void main() {
       var result = parser.parse(input);
       assert(result.isSuccess);
     });
-
   });
 
   group('if expression', () {
@@ -585,11 +610,9 @@ void main() {
     });
   });
 
-
   group('for statement', () {
-    
     Parser parser;
-    setUp((){
+    setUp(() {
       parser = dg.build(start: dg.forStatement);
     });
 
@@ -614,9 +637,8 @@ void main() {
   });
 
   group('object expression', () {
-    
     Parser parser;
-    setUp((){
+    setUp(() {
       parser = dg.build(start: dg.objectExpression).end();
     });
 
@@ -625,8 +647,9 @@ void main() {
       assert(result.isSuccess);
     });
 
-    test('complex', (){
-      var result = parser.parse('{"title":"Delete file " + title,"description":"This file will be deleted and moved to trash in your OneDrive.","buttontext":"Delete"}');
+    test('complex', () {
+      var result = parser.parse(
+          '{"title":"Delete file " + title,"description":"This file will be deleted and moved to trash in your OneDrive.","buttontext":"Delete"}');
       assert(result.isSuccess);
     });
 
@@ -634,7 +657,9 @@ void main() {
       var parser = dg.build(start: dg.singleParam).end();
       var result = parser.parse('{"name":"Jane", "age": 21, "stocks": {1,2}}');
       assert(result.isSuccess);
-      var props = (result.value as ObjectExpression).properties.cast<ObjectProperty>(); //  as List<ObjectProperty>;
+      var props = (result.value as ObjectExpression)
+          .properties
+          .cast<ObjectProperty>(); //  as List<ObjectProperty>;
       expect("name".split(''), (props[0].key as StringLiteral).value[1]);
       expect("Jane".split(''), (props[0].value as StringLiteral).value[1]);
 
@@ -642,17 +667,17 @@ void main() {
       expect(21, (props[1].value as BigIntLiteral).value);
 
       expect("stocks".split(''), (props[2].key as StringLiteral).value[1]);
-      var listValElements = (props[2].value as ListExpression).elements.cast<BigIntLiteral>(); // as List<BigIntLiteral>;
+      var listValElements = (props[2].value as ListExpression)
+          .elements
+          .cast<BigIntLiteral>(); // as List<BigIntLiteral>;
       expect(1, listValElements[0].value);
       expect(2, listValElements[1].value);
     });
-
   });
 
   group('list expression', () {
-    
     Parser parser;
-    setUp((){
+    setUp(() {
       parser = dg.build(start: dg.listExpression).end();
     });
 
@@ -661,7 +686,6 @@ void main() {
       assert(result.isSuccess);
     });
 
-    
     test('with {}', () {
       var result = parser.parse('{ 1, { "a": 2} }');
       assert(result.isSuccess);
@@ -673,18 +697,20 @@ void main() {
       assert(result.isSuccess);
       var exp = result.value as ListExpression;
       expect(1, (exp.elements[0] as BigIntLiteral).value);
-      expect(2, ((exp.elements[1] as ListExpression).elements[0] as BigIntLiteral).value);
-      var exp2 = (exp.elements[2] as ObjectExpression).properties[0] as ObjectProperty;
-      expect('name'.split(''), (exp2.key as StringLiteral).value[1] );
+      expect(
+          2,
+          ((exp.elements[1] as ListExpression).elements[0] as BigIntLiteral)
+              .value);
+      var exp2 =
+          (exp.elements[2] as ObjectExpression).properties[0] as ObjectProperty;
+      expect('name'.split(''), (exp2.key as StringLiteral).value[1]);
       expect('Jane'.split(''), (exp2.value as StringLiteral).value[1]);
     });
-
-   
   });
 
   group('List Declaration', () {
     Parser parser;
-    setUp((){
+    setUp(() {
       parser = dg.build(start: dg.singleParam).end();
     });
 
@@ -692,13 +718,11 @@ void main() {
       var result = parser.parse('List({1,2})');
       assert(result.isSuccess);
     });
-    
   });
 
-  
   group('Collection Declaration', () {
     Parser parser;
-    setUp((){
+    setUp(() {
       parser = dg.build(start: dg.singleParam).end();
     });
 
@@ -706,18 +730,16 @@ void main() {
       var result = parser.parse('Collection(1,2)');
       assert(result.isSuccess);
     });
-    
-    
+
     test('with map', () {
       var result = parser.parse('Collection("Name": "Jane", "Age": 21)');
       assert(result.isSuccess);
     });
   });
 
-  group('return statement', (){
-
+  group('return statement', () {
     Parser parser;
-    setUp((){
+    setUp(() {
       parser = dg.build(start: dg.returnStatement);
     });
 
@@ -727,17 +749,15 @@ void main() {
       var exp = result.value as ReturnStatement;
       expect('id', (exp.argument as Identifier).name);
     });
-
   });
-
 
   group('info', () {
     Parser parser;
-    setUp((){
+    setUp(() {
       parser = dg.build(start: dg.infoExpression);
     });
 
-    test('normal', (){
+    test('normal', () {
       var input = 'info hello';
       var result = parser.parse(input);
       assert(result.isSuccess);
@@ -754,13 +774,11 @@ void main() {
       expect('users', (binExp.right as Identifier).name);
       assert(binExp.left is StringLiteral);
     });
-
-
   });
 
   group('invoke func', () {
     Parser parser;
-    setUp((){
+    setUp(() {
       parser = dg.build(start: dg.invokeFunction);
     });
 
@@ -777,42 +795,38 @@ void main() {
       var exp = result.value as InvokeFunction;
       expect('invokeUrl', (exp.identifier as Identifier).name);
       expect('url', ((exp.args[0] as ObjectProperty).key as Identifier).name);
-      expect([ '"', 'www.google.com'.split(''), '"'], ((exp.args[0] as ObjectProperty).value as StringLiteral).value);
+      expect(['"', 'www.google.com'.split(''), '"'],
+          ((exp.args[0] as ObjectProperty).value as StringLiteral).value);
       expect('type', ((exp.args[1] as ObjectProperty).key as Identifier).name);
       expect('GET', ((exp.args[1] as ObjectProperty).value as Identifier).name);
-
     });
   });
 
-
-    test('sample test 1', () {
+  test('sample test 1', () {
     var parser = DelugeParser();
-    var input = sample.SAMPLE1; 
-    var watch = Stopwatch() ..start();
+    var input = sample.SAMPLE1;
+    var watch = Stopwatch()..start();
     var result = parser.parse(input);
     watch.stop();
     print('elapsed time ${watch.elapsedMilliseconds}');
     expect(input.length, result.position);
   });
 
-
-  test('sample test 2', (){
+  test('sample test 2', () {
     var parser = DelugeParser();
     var result = parser.parse(sample.SAMPLE2);
-    
+
     assert(result.isSuccess);
     expect(sample.SAMPLE2.length, result.position);
-
   });
 
-   test('sample test 3', (){
+  test('sample test 3', () {
     var parser = DelugeParser();
     var result = parser.parse(sample.SAMPLE3);
     assert(result.isSuccess);
+    print(result.value);
     expect(sample.SAMPLE3.length, result.position);
-
   });
-
 
   test('cliq post to chat', () {
     // var input = 'zoho.chat.postToChat(chat.get("id"),message)';
@@ -821,9 +835,7 @@ void main() {
     var result = parser.parse(input);
     profile(parser);
     assert(result.isSuccess);
-    
   });
-
 
   test('test-bed', () {
     var input =
@@ -833,27 +845,82 @@ void main() {
     assert(result.isSuccess);
   });
 
-
-
   group('statement error', () {
-    
     Parser parser;
-    setUp((){
-     parser = DelugeParser();
+    setUp(() {
+      parser = DelugeParser();
     });
 
-    test('single error', (){
+    test('single error', () {
       var result = parser.parse('id = d');
-      
+
       assert(result.isFailure);
     });
   });
 
-
-  test('test contin', (){
-    //var parser = trace(DelugeParser());
-    var parser = trace(dg.build(start: dg.booleanLiteral));
-    parser.parse('true ');
-    
+  test('line error', () {
+    var parser = dg.build(start: dg.lineError);
+    var result = parser.parse("""var j = ;
+     var k = 1;""");
+    assert(result.isSuccess);
   });
+
+  group('errors', () {
+    Parser parser;
+    setUp(() {
+      parser = DelugeParser();
+    });
+
+    test('normal statement', () {
+      var input = """
+      a = true;
+      a = ;
+      a = 1;
+      """;
+      var result = parser.parse(input);
+      assert(result.isSuccess);
+    });
+
+    test('inner if statement', () {
+      var input = """
+      if(a) {
+        d = ; 
+      }
+      """;
+      var result = parser.parse(input);
+      assert(result.isSuccess);
+    });
+
+    test('in if statement ', () {
+      var input = """
+       k = 1;
+       if(k) {
+         d = 1;
+       }
+       """;
+      var result = parser.parse(input);
+      assert(result.isSuccess);
+    });
+    
+    test('inner for statement', () {
+    var input = """
+      for each i in listVal {
+        a = ;
+        d = 1;
+         = ;
+        j = 1;
+      }
+      """;
+    var result = parser.parse(input);
+    assert(result.isSuccess);
+    var exp = ((result.value[0] as ForStatement).body as BlockStatement);
+    assert(exp.body[0] is LineError);
+    assert(exp.body[2] is LineError);
+
+  });
+
+  });
+
+
+  
 }

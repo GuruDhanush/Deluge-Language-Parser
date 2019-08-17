@@ -727,9 +727,9 @@ void main() {
       expect(true, result.isSuccess);
       expect('i', result.value[0].value);
       expect('+=', result.value[1].value);
-      expect('list', result.value[2][0][0].value);
-      expect('get', result.value[2][0][2].value);
-      expect(1, result.value[2][1][1][0][0].value);
+      expect('list', result.value[2][0][0][0][0].value);
+      expect('get', result.value[2][0][0][2].value);
+      expect(1, result.value[2][0][0][1][1][0][0].value);
     });
   
 
