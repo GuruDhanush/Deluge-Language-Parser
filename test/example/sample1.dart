@@ -3,6 +3,7 @@
 const String SAMPLE1 = """
      //vr=1;
     response = Map();
+    "/";
     res = Collection();
     response.put("bot",{"name":"OneDrive"});
     if(arguments.trim().length() <= 0 && selections.size() <= 0)
@@ -382,7 +383,7 @@ const String SAMPLE2 = """
 """;
 
 const String SAMPLE3 = """
-  message = Map();
+  message  Map();
   if(arguments == "")
   {
     //message.put("text","Invalid input. Usage \"/stackoverflow content editable disabled after long time usage\"");
@@ -411,6 +412,6 @@ const String SAMPLE3 = """
       break;
     }
   }
-  message.put("text",response);
+  message.put("text"response);
   return message;
 """;

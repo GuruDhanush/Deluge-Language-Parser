@@ -200,9 +200,14 @@ class DelugeParserDefinition extends DgGrammarDef {
   Parser lineError() => super
       .lineError()
       .token()
-      .map((id) => LineError.fromId(error: 'Line error', id: id));
+      .map((id) => 
+      LineError.fromId(error: 'Line error', id: id));
+  
+  //Parser whitespaceLine() => super.whitespaceLine().token().trim().map((id) => id);
+  //.map((id) => EmptySpace(id: id));
 
   Parser statement() => super.statement().map((id) {
+        //if(id is! EmptySpace) retur;
         return id;
       });
 

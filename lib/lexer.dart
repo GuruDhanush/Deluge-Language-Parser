@@ -51,12 +51,13 @@ class DgGrammarDef extends GrammarDefinition {
 
   Parser unaryExpression() => ref(prefixConditionalOperator) & ref(singleParam);
 
-  Parser binaryExpression() => ref(singleParam) &
-          ((ref(arithemticOperator) |
-                      ref(equalityOperator) |
-                      ref(relationalOperator)) &
-                  (ref(singleParam)))
-              .star();
+  Parser binaryExpression() =>
+      ref(singleParam) &
+      ((ref(arithemticOperator) |
+                  ref(equalityOperator) |
+                  ref(relationalOperator)) &
+              (ref(singleParam)))
+          .star();
 
   Parser bracketExpression() =>
       ref(token, '(') &
@@ -104,7 +105,12 @@ class DgGrammarDef extends GrammarDefinition {
       ref(ifStatement) |
       ref(forStatement) |
       ref(expressionStatement) |
+      //ref(whitespaceLine) |
       ref(lineError);
+
+  Parser whitespaceLine() => (whitespace() | ref(NEWLINE))
+      .plus().flatten()
+      .trim();
 
   //TODO: fix the case where it fails when the error is in last line
   Parser lineError() =>
@@ -256,7 +262,7 @@ class DgGrammarDef extends GrammarDefinition {
       ref(token, 'Date') |
       ref(token, 'Bool') |
       ref(token, 'Float');
-  
+
   Parser singleLineComment() => ref(token, SINGLELINE_COMMENT);
   Parser multiLineComment() => ref(token, MULTILINE_COMMENT);
 
