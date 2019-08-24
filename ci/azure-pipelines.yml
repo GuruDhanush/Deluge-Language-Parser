@@ -26,12 +26,20 @@ steps:
       bash <(curl -s https://codecov.io/bash) -t $(CODECOV_TOKEN)
     displayName: 'test coverage'
   - script: |
-      cd coverage
-      curl https://raw.githubusercontent.com/eriwen/lcov-to-cobertura-xml/master/lcov_cobertura/lcov_cobertura.py --output lcovcob.py
-      python lcovcob.py  lcov.info 
-    displayName: 'convert lcov to Cobertura'
-  - task: PublishCodeCoverageResults@1
+      mkdir dist
+      /usr/lib/dart/bin/dart2aot.bat ./bin/main.dart ./dist/main.dart.aot
+    displayName: 'build files'
+  - task: CopyFiles@1 
     inputs:
-      codeCoverageTool: 'Cobertura'
-      summaryFileLocation: $(System.DefaultWorkingDirectory)/Deluge-Language-Parser/coverage/coverage.xml
+      TargetFolder: './dist'
+      SourceFolder: '/usr/lib/dart/bin'
+      Contents: './dartaotruntime' 
+    displayName: 'copy aot'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: ./dist
+      ArtifactName: 'Linux'
+
+
+ 
  
