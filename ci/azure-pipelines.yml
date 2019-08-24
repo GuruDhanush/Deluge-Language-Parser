@@ -46,22 +46,22 @@ jobs:
       vmImage: 'windows-latest'
     steps:
       - script: |
-          choco install dart-sdk --install-directory '.\' -y
+          choco install dart-sdk -y
         displayName: 'Install sdk'
       - script: 
-          .\dart-sdk\bin\pub.bat get 
+          C:\tools\dart-sdk\bin\pub.bat get 
         displayName: 'Pub get'    
       - script: 
-          .\dart-sdk\bin\pub.bat run test .\test\all_test.dart --platform vm
+          C:\tools\dart-sdk\bin\pub.bat run test .\test\all_test.dart --platform vm
         displayName: 'Unit test'
       - script: |
           mkdir dist
-          .\dart-sdk\bin\dart2aot.bat .\bin\main.dart .\dist\main.dart.aot
+          C:\tools\dart-sdk\bin\dart2aot.bat .\bin\main.dart .\dist\main.dart.aot
         displayName: 'build files'
       - task: CopyFiles@1 
         inputs:
           TargetFolder: '.\\dist'
-          SourceFolder: '.\\dart-sdk\\bin\\'
+          SourceFolder: 'C:\\tools\\dart-sdk\\bin'
           Contents: 'dartaotruntime.exe' 
         displayName: 'copy aot'
       - task: PublishBuildArtifacts@1
