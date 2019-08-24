@@ -2,43 +2,72 @@
 trigger:
 - master
 
-pool:
-  vmImage: 'ubuntu-latest'
-steps:
-  - script: |
-      sudo apt-get install apt-transport-https
-      sudo sh -c 'curl https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -'
-      sudo sh -c 'curl https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_stable.list > /etc/apt/sources.list.d/dart_stable.list'
-    displayName: 'Setup sdk'
-  - script: |
-      sudo apt-get update
-      sudo apt-get install dart
-    displayName: 'Install sdk'
-  - script: 
-      /usr/lib/dart/bin/pub get 
-    displayName: 'Pub get'    
-  - script: 
-      /usr/lib/dart/bin/pub run test ./test/all_test.dart --platform vm
-    displayName: 'Unit test'
-  - script: |
-      /usr/lib/dart/bin/pub global activate test_coverage  
-      /usr/lib/dart/bin/pub global run test_coverage --exclude "test/all_test.dart" --no-badge
-      bash <(curl -s https://codecov.io/bash) -t $(CODECOV_TOKEN)
-    displayName: 'test coverage'
-  - script: |
-      mkdir dist
-      /usr/lib/dart/bin/dart2aot ./bin/main.dart ./dist/main.dart.aot
-    displayName: 'build files'
-  - task: CopyFiles@1 
-    inputs:
-      TargetFolder: './dist'
-      SourceFolder: '/usr/lib/dart/bin'
-      Contents: 'dartaotruntime' 
-    displayName: 'copy aot'
-  - task: PublishBuildArtifacts@1
-    inputs:
-      PathtoPublish: './dist'
-      ArtifactName: 'Linux'
+jobs:
+  # - job: Linux
+  #   pool:
+  #     vmImage: 'ubuntu-latest'
+  #   steps:
+  #     - script: |
+  #         sudo apt-get install apt-transport-https
+  #         sudo sh -c 'curl https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -'
+  #         sudo sh -c 'curl https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_stable.list > /etc/apt/sources.list.d/dart_stable.list'
+  #       displayName: 'Setup sdk'
+  #     - script: |
+  #         sudo apt-get update
+  #         sudo apt-get install dart
+  #       displayName: 'Install sdk'
+  #     - script: 
+  #         /usr/lib/dart/bin/pub get 
+  #       displayName: 'Pub get'    
+  #     - script: 
+  #         /usr/lib/dart/bin/pub run test ./test/all_test.dart --platform vm
+  #       displayName: 'Unit test'
+  #     - script: |
+  #         /usr/lib/dart/bin/pub global activate test_coverage  
+  #         /usr/lib/dart/bin/pub global run test_coverage --exclude "test/all_test.dart" --no-badge
+  #         bash <(curl -s https://codecov.io/bash) -t $(CODECOV_TOKEN)
+  #       displayName: 'test coverage'
+  #     - script: |
+  #         mkdir dist
+  #         /usr/lib/dart/bin/dart2aot ./bin/main.dart ./dist/main.dart.aot
+  #       displayName: 'build files'
+  #     - task: CopyFiles@1 
+  #       inputs:
+  #         TargetFolder: './dist'
+  #         SourceFolder: '/usr/lib/dart/bin'
+  #         Contents: 'dartaotruntime' 
+  #       displayName: 'copy aot'
+  #     - task: PublishBuildArtifacts@1
+  #       inputs:
+  #         PathtoPublish: './dist'
+  #         ArtifactName: 'Linux'
+  - job: 'Windows'
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+      - script: |
+          choco install dart-sdk --install-directory '.\' -y
+        displayName: 'Install sdk'
+      - script: 
+          .\dart-sdk\bin\pub.bat get 
+        displayName: 'Pub get'    
+      - script: 
+          .\dart-sdk\bin\pub.bat run test .\test\all_test.dart --platform vm
+        displayName: 'Unit test'
+      - script: |
+          mkdir dist
+          .\dart-sdk\bin\dart2aot.bat .\bin\main.dart .\dist\main.dart.aot
+        displayName: 'build files'
+      - task: CopyFiles@1 
+        inputs:
+          TargetFolder: '.\\dist'
+          SourceFolder: '.\\dart-sdk\\bin\\'
+          Contents: 'dartaotruntime.exe' 
+        displayName: 'copy aot'
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: '.\\dist'
+          ArtifactName: 'Windows'
 
 
  
