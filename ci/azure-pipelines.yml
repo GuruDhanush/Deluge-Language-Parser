@@ -27,17 +27,17 @@ steps:
     displayName: 'test coverage'
   - script: |
       mkdir dist
-      ./usr/lib/dart/bin/dart2aot ./bin/main.dart ./dist/main.dart.aot
+      /usr/lib/dart/bin/dart2aot ./bin/main.dart ./dist/main.dart.aot
     displayName: 'build files'
   - task: CopyFiles@1 
     inputs:
       TargetFolder: './dist'
       SourceFolder: '/usr/lib/dart/bin'
-      Contents: './dartaotruntime' 
+      Contents: 'dartaotruntime' 
     displayName: 'copy aot'
   - task: PublishBuildArtifacts@1
     inputs:
-      PathtoPublish: ./dist
+      PathtoPublish: './dist'
       ArtifactName: 'Linux'
 
 
