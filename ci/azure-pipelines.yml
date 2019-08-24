@@ -3,100 +3,101 @@ trigger:
 - master
 
 jobs:
-  # - job: Linux
-  #   pool:
-  #     vmImage: 'ubuntu-latest'
-  #   steps:
-  #     - script: |
-  #         sudo apt-get install apt-transport-https
-  #         sudo sh -c 'curl https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -'
-  #         sudo sh -c 'curl https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_stable.list > /etc/apt/sources.list.d/dart_stable.list'
-  #       displayName: 'Setup sdk'
-  #     - script: |
-  #         sudo apt-get update
-  #         sudo apt-get install dart
-  #       displayName: 'Install sdk'
-  #     - script: 
-  #         /usr/lib/dart/bin/pub get 
-  #       displayName: 'Pub get'    
-  #     - script: 
-  #         /usr/lib/dart/bin/pub run test ./test/all_test.dart --platform vm
-  #       displayName: 'Unit test'
-  #     - script: |
-  #         /usr/lib/dart/bin/pub global activate test_coverage  
-  #         /usr/lib/dart/bin/pub global run test_coverage --exclude "test/all_test.dart" --no-badge
-  #         bash <(curl -s https://codecov.io/bash) -t $(CODECOV_TOKEN)
-  #       displayName: 'test coverage'
-  #     - script: |
-  #         mkdir dist
-  #         /usr/lib/dart/bin/dart2aot ./bin/main.dart ./dist/main.dart.aot
-  #       displayName: 'build files'
-  #     - task: CopyFiles@1 
-  #       inputs:
-  #         TargetFolder: './dist'
-  #         SourceFolder: '/usr/lib/dart/bin'
-  #         Contents: 'dartaotruntime' 
-  #       displayName: 'copy aot'
-  #     - task: PublishBuildArtifacts@1
-  #       inputs:
-  #         PathtoPublish: './dist'
-  #         ArtifactName: 'Linux'
-  # - job: 'Windows'
-  #   pool:
-  #     vmImage: 'windows-latest'
-  #   steps:
-  #     - script: |
-  #         choco install dart-sdk -y
-  #       displayName: 'Install sdk'
-  #     - script: 
-  #         C:\tools\dart-sdk\bin\pub.bat get 
-  #       displayName: 'Pub get'    
-  #     - script: 
-  #         C:\tools\dart-sdk\bin\pub.bat run test .\test\all_test.dart --platform vm
-  #       displayName: 'Unit test'
-  #     - script: |
-  #         mkdir dist
-  #         C:\tools\dart-sdk\bin\dart2aot.bat .\bin\main.dart .\dist\main.dart.aot
-  #       displayName: 'build files'
-  #     - task: CopyFiles@1 
-  #       inputs:
-  #         TargetFolder: '.\\dist'
-  #         SourceFolder: 'C:\\tools\\dart-sdk\\bin'
-  #         Contents: 'dartaotruntime.exe' 
-  #       displayName: 'copy aot'
-  #     - task: PublishBuildArtifacts@1
-  #       inputs:
-  #         PathtoPublish: '.\\dist'
-  #         ArtifactName: 'Windows'
-    - job: macos
-      pool:
-        vmImage: 'macOS-latest'
-      steps:
-        - script: |
-            brew tap dart-lang/dart
-            brew install dart
-            brew info dart
-          displayName: 'Install sdk'
-        - script: 
-            /usr/local/Cellar/dart/2.4.1/bin/pub get 
-          displayName: 'Pub get'    
-        - script: 
-            /usr/local/Cellar/dart/2.4.1/bin/pub run test ./test/all_test.dart --platform vm
-          displayName: 'Unit test'
-        - script: |
-            mkdir dist
-            /usr/local/Cellar/dart/2.4.1/bin/dart2aot ./bin/main.dart ./dist/main.dart.aot
-          displayName: 'build files'
-        - task: CopyFiles@1 
-          inputs:
-            TargetFolder: './dist'
-            SourceFolder: '/usr/local/Cellar/dart/2.4.1/bin/'
-            Contents: 'dartaotruntime' 
-          displayName: 'copy aot'
-        - task: PublishBuildArtifacts@1
-          inputs:
-            PathtoPublish: './dist'
-            ArtifactName: 'Macos'
+  - job: Linux
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - script: |
+          sudo apt-get install apt-transport-https
+          sudo sh -c 'curl https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -'
+          sudo sh -c 'curl https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_stable.list > /etc/apt/sources.list.d/dart_stable.list'
+        displayName: 'Setup sdk'
+      - script: |
+          sudo apt-get update
+          sudo apt-get install dart
+        displayName: 'Install sdk'
+      - script: 
+          /usr/lib/dart/bin/pub get 
+        displayName: 'Pub get'    
+      - script: 
+          /usr/lib/dart/bin/pub run test ./test/all_test.dart --platform vm
+        displayName: 'Unit test'
+      - script: |
+          /usr/lib/dart/bin/pub global activate test_coverage  
+          /usr/lib/dart/bin/pub global run test_coverage --exclude "test/all_test.dart" --no-badge
+          bash <(curl -s https://codecov.io/bash) -t $(CODECOV_TOKEN)
+        displayName: 'test coverage'
+      - script: |
+          mkdir dist
+          /usr/lib/dart/bin/dart2aot ./bin/main.dart ./dist/main.dart.aot
+        displayName: 'build files'
+      - task: CopyFiles@1 
+        inputs:
+          TargetFolder: './dist'
+          SourceFolder: '/usr/lib/dart/bin'
+          Contents: 'dartaotruntime' 
+        displayName: 'copy aot'
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: './dist'
+          ArtifactName: 'Linux'
+  - job: 'Windows'
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+      - script: |
+          choco install dart-sdk -y
+        displayName: 'Install sdk'
+      - script: 
+          C:\tools\dart-sdk\bin\pub.bat get 
+        displayName: 'Pub get'    
+      - script: 
+          C:\tools\dart-sdk\bin\pub.bat run test .\test\all_test.dart --platform vm
+        displayName: 'Unit test'
+      - script: |
+          mkdir dist
+          C:\tools\dart-sdk\bin\dart2aot.bat .\bin\main.dart .\dist\main.dart.aot
+        displayName: 'build files'
+      - task: CopyFiles@1 
+        inputs:
+          TargetFolder: '.\\dist'
+          SourceFolder: 'C:\\tools\\dart-sdk\\bin'
+          Contents: 'dartaotruntime.exe' 
+        displayName: 'copy aot'
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: '.\\dist'
+          ArtifactName: 'Windows'
+  #issue with the mac-os version, fix later
+  - job: macos
+    pool:
+      vmImage: 'macOS-latest'
+    steps:
+      - script: |
+          brew tap dart-lang/dart
+          brew install dart
+          brew info dart
+        displayName: 'Install sdk'
+      - script: 
+          /usr/local/Cellar/dart/2.4.1/bin/pub get 
+        displayName: 'Pub get'    
+      - script: 
+          /usr/local/Cellar/dart/2.4.1/bin/pub run test ./test/all_test.dart --platform vm
+        displayName: 'Unit test'
+      - script: |
+          mkdir dist
+          /usr/local/Cellar/dart/2.4.1/bin/dart2aot ./bin/main.dart ./dist/main.dart.aot
+        displayName: 'build files'
+      - task: CopyFiles@1 
+        inputs:
+          TargetFolder: './dist'
+          SourceFolder: '/usr/local/Cellar/dart/2.4.1/bin/'
+          Contents: 'dartaotruntime' 
+        displayName: 'copy aot'
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: './dist'
+          ArtifactName: 'Macos'
 
 
 
