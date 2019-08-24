@@ -78,19 +78,19 @@ jobs:
             brew info dart
           displayName: 'Install sdk'
         - script: 
-            /usr/lib/dart/bin/pub get 
+            /usr/local/opt/dart/libexec/pub get 
           displayName: 'Pub get'    
         - script: 
-            /usr/lib/dart/bin/pub run test ./test/all_test.dart --platform vm
+            /usr/local/opt/dart/libexec/pub run test ./test/all_test.dart --platform vm
           displayName: 'Unit test'
         - script: |
             mkdir dist
-            /usr/lib/dart/bin/dart2aot ./bin/main.dart ./dist/main.dart.aot
+            /usr/local/opt/dart/libexec/dart2aot ./bin/main.dart ./dist/main.dart.aot
           displayName: 'build files'
         - task: CopyFiles@1 
           inputs:
             TargetFolder: './dist'
-            SourceFolder: '/usr/lib/dart/bin'
+            SourceFolder: '/usr/local/opt/dart/libexec'
             Contents: 'dartaotruntime' 
           displayName: 'copy aot'
         - task: PublishBuildArtifacts@1
