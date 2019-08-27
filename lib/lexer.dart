@@ -8,7 +8,7 @@ class DgGrammar extends GrammarParser {
 class DgGrammarDef extends GrammarDefinition {
   Parser token(Object input) {
     if (input is Parser) {
-      return input.token().trim();
+      return input.token().trim(ref(DISCARDED)); //(ref(WHITESPACE));
     } else if (input is String) {
       return token(input.length == 1 ? char(input) : string(input));
     } else if (input is Function) {
@@ -89,35 +89,31 @@ class DgGrammarDef extends GrammarDefinition {
           ref(callExpression) |
           ref(memberExpression));
 
-  Parser expressionStatement() =>
-      (ref(CONTINUE) |
+  Parser expressionStatement() => ((ref(CONTINUE) |
           ref(BREAK) |
           ref(assignmentExpression) |
           ref(callExpression) |
           ref(memberExpression) |
           ref(infoExpression)) &
-      ref(token, ';');
+      char(';').token());
 
   Parser statement() =>
+      ref(whitespace).plus().trim() |
       ref(singleLineComment) |
       ref(multiLineComment) |
       ref(returnStatement) |
       ref(ifStatement) |
       ref(forStatement) |
       ref(expressionStatement) |
-      //ref(whitespaceLine) |
       ref(lineError);
 
-  Parser whitespaceLine() => (whitespace() | ref(NEWLINE))
-      .plus().flatten()
-      .trim();
+  Parser whitespaceLine() =>
+      (whitespace() | ref(NEWLINE)).plus().flatten().trim();
 
   //TODO: fix the case where it fails when the error is in last line
-  Parser lineError() =>
-      noneOf('\n\r}').plus() &
-      anyIn('\n\r'); //  pattern('^\n\r').star() & pattern('\n\r');
+  Parser lineError() => noneOf('\n\r}').plus() & anyIn('\n\r');
 
-  Parser statements() => ref(statement).star();
+  Parser statements() => ref(statement).trim().star();
 
   Parser infoExpression() =>
       ref(INFO) & (ref(binaryExpression) | ref(singleParam));
@@ -150,7 +146,8 @@ class DgGrammarDef extends GrammarDefinition {
   Parser objectBody() => ref(objectProperty)
       .separatedBy(ref(token, ','), includeSeparators: false);
   Parser listBody() =>
-      ref(singleParam).separatedBy(ref(token, ','), includeSeparators: false);
+      (ref(logicalExpression) | ref(binaryExpression) | ref(singleParam))
+          .separatedBy(ref(token, ','), includeSeparators: false);
   Parser listExpression() =>
       ref(token, '[') & ref(listBody).optional() & ref(token, ']') |
       ref(token, '{') & ref(listBody).optional() & ref(token, '}');
@@ -366,8 +363,12 @@ class DgGrammarDef extends GrammarDefinition {
   Parser LETTER() => letter();
   Parser DIGIT() => digit();
 
-  Parser NEWLINE() => pattern('\n\r');
-  //TODO: potential perf issues with starGreedy otherwise stops after finding \n
+  Parser NEWLINE() => char('\n') | char('\r') & char('\n').optional();
+
+  Parser DISCARDED() => (ref(WHITESPACE)).plus();
+
+  Parser WHITESPACE() => ref(whitespace);
+
   Parser SINGLELINE_COMMENT() =>
       char('/') &
       char('/') &
@@ -375,11 +376,7 @@ class DgGrammarDef extends GrammarDefinition {
       ref(NEWLINE).optional();
 
   Parser MULTILINE_COMMENT() =>
-      char('/') &
-      char('*') &
-      (ref(MULTILINE_COMMENT) | string('*/').neg()).star() &
-      char('*') &
-      char('/');
+      string('/*') & (string('*/').neg()).star() & string('*/');
 
   Parser STRING() =>
       (char('"') & ref(CHAR_PRIMITIVE_DOUBLE_QUOTE).star() & char('"')) |

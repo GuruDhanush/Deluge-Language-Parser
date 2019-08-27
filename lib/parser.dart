@@ -138,7 +138,7 @@ class DelugeParserDefinition extends DgGrammarDef {
           test: id.value[2],
           value: id.value[4],
           alternate: id.value[6],
-          id: id));
+          id: id,));
 
   Parser ifNullExpression() =>
       super.ifNullExpression().token().map((id) => IfNullExpression.fromId(
@@ -147,7 +147,7 @@ class DelugeParserDefinition extends DgGrammarDef {
   Parser blockStatement() => super
       .blockStatement()
       .token()
-      .map((id) => BlockStatement.fromId(body: id.value[1], id: id));
+      .map((id) => BlockStatement.fromIdWithEnd(body: id.value[1], id: id));
 
   Parser ifStatement() => super.ifStatement().token().map((id) {
         var consequent = id.value[6] != null ? id.value[6][1] : null;
@@ -201,15 +201,15 @@ class DelugeParserDefinition extends DgGrammarDef {
       .lineError()
       .token()
       .map((id) => 
-      LineError.fromId(error: 'Line error', id: id));
+      LineError.fromIdWithEnd(error: 'Line error', id: id));
   
   //Parser whitespaceLine() => super.whitespaceLine().token().trim().map((id) => id);
   //.map((id) => EmptySpace(id: id));
 
-  Parser statement() => super.statement().map((id) {
-        //if(id is! EmptySpace) retur;
-        return id;
-      });
+  // Parser statement() => super.statement().map((id) {
+  //       //if(id is! EmptySpace) retur;
+  //       return id;
+  //     });
 
   //TODO: add data type declarations to property
   Parser listDeclaration() =>

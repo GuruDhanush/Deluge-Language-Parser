@@ -1,0 +1,701 @@
+functions:
+  getUrl:
+    name: getUrl
+    params:
+      - url : String
+      - simple: boolean
+    returns: Map
+    shortInfo: Performs an get operation in url and returns the response as string. If the simple (optional) is false then returns the full response 
+    info:
+    examples:
+  postUrl:
+    name: postUrl
+    params:
+      - url : String
+      - body: Map
+      - header: Map
+      - simple: boolean
+    returns: Map
+    shortInfo: Performs an post operation in url with body as Map and header as Map and returns the response as string. If the simple (optional) is false then returns the full response 
+    info:
+    examples:
+  encodeUrl:
+    name: getUrl
+    params:
+      - url : String
+    returns: String
+    shortInfo: Encodes the url and returns as String 
+    info:
+    examples:
+  base64Encode:
+    name: base64Encode
+    params:
+      - text : String
+    returns: String
+    shortInfo: Encodes the text as base64 string 
+    info:
+    examples:
+  base64Decode:
+    name: base64Decode
+    params:
+      - text : String
+    returns: String
+    shortInfo: Decodes the base64 encoded text as String 
+    info:
+    examples:
+  urlDecode:
+    name: urlDecode
+    params:
+      - url : String
+    returns: String
+    shortInfo: Decodes the encoded url and returns as String 
+    info:
+    examples:
+  urlEncode:
+    name: urlEncode
+    params:
+      - url : String
+    returns: String
+    shortInfo: Encodes the url and returns as String 
+    info:
+    examples:
+  aesDecode:
+    name: aesDecode
+    params:
+      - key : String
+      - encrypted_text: String
+    returns: String
+    shortInfo: Decrypts the encrypted_text with the key using aes and returns the decrypted string 
+    info:
+    examples:
+  aesEncode:
+    name: aesEncode
+    params:
+      - key : String
+      - text: String
+    returns: String
+    shortInfo: Encrypts the text with the key using aes and returns the encrypted string 
+    info:
+    examples:
+  contains:
+    name: contains
+    params: 
+        - string
+    returns: boolean
+    shortInfo: Returns true if the passed string is substring.
+    info: | 
+        checks whether the string in the params is a substring of current one. The search
+        is a **case sensitive** search. Look for [containsIgnoreCase] for case insensitive search.
+    examples: |
+            Typical use
+            ```dg
+                "Hello World".contains("World"); // returns true
+            ```
+            Checking for empty string. Empty string always returns true
+            ```dg
+                "Hello World".contains(""); //returns true
+            ```
+  endsWith: 
+        name: endsWith
+        params:
+            - string
+        returns: boolean
+        shortInfo: Returns true if the string ends with the given string
+        info: 
+        examples:
+  startsWith:
+    name: startsWith
+    params:
+        - string
+    returns: string
+    shortInfo: Returns true if the string starts with the given string
+    info:
+    examples:
+  remove:
+        name: remove
+        params:
+          string
+        returns: string
+        shortInfo: Removes the given string from the string. 
+        info:
+        examples:
+  removeFirstOccurence:
+        name: removeFirstOccurence
+        params:
+          string
+        returns: string
+        shortInfo: Removes the first occurence of the given string from the string. 
+        info:
+        examples:
+  removeLastOccurence:
+        name: removeLastOccurence
+        params:
+            - string
+        returns: string
+        shortInfo: Removes the last occurence of the given string from the string. 
+        info:
+        examples:
+  getSuffix:
+        name: getSuffix
+        params:
+            - string
+        returns: string
+        shortInfo: Returns the remaining string after the given string. 
+        info:
+        examples:
+  getPrefix:
+        name: getPrefix
+        params:
+            - string
+        returns: string
+        shortInfo: Returns the remaining string before the given string. 
+        info:
+        examples:
+  toUpperCase:
+        name: toUpperCase
+        params: []
+        returns: string
+        shortInfo: Returns the string as uppercase 
+        info:
+        examples:
+  toLowerCase:
+        name: toLowerCase
+        params: []
+        returns: string
+        shortInfo: Returns the string as lowercase 
+        info:
+        examples:
+  getAlphaNumeric:
+        name: getAlphaNumeric
+        params: []
+        returns: string
+        shortInfo: Returns the string containing alphanumeric characters only 
+        info:
+        examples:
+  getAlpha:
+        name: getAlpha
+        params: []
+        returns: string
+        shortInfo: Returns the string containing only alphabetic characters 
+        info:
+        examples:
+  removeAllAlphaNumeric:
+        name: removeAllAlphaNumeric
+        params: []
+        returns: string
+        shortInfo: Returns the string after removing all the alphanumeric characters 
+        info:
+        examples:
+  removeAllAlpha:
+        name: removeAllAlpha
+        params: []
+        returns: string
+        shortInfo: Returns the string after removing all the alphabetic characters 
+        info:
+        examples:
+  length:
+        name: length
+        params: []
+        returns: bigint
+        shortInfo: Returns the length of the string in bigint 
+        info:
+        examples:
+  getOccurence:
+        name: getOccurence
+        params: 
+            - string
+        returns: bigint
+        shortInfo: Returns the count of given string present as substring in the string 
+        info:
+        examples:
+  indexOf:
+        name: indexOf
+        params: 
+            - string
+        returns: bigint
+        shortInfo: Returns the index of first occurence of given string as substring in the string 
+        info:
+        examples:
+  lastIndexOf:
+        name: lastIndexOf
+        params: 
+            - string
+        returns: bigint
+        shortInfo: Returns the index of last occurence of given string as substring in the string 
+        info:
+        examples:
+  substring:
+        name: substring
+        params: 
+            - bigint
+            - bigint
+        returns: string
+        shortInfo: Returns the string from specified start index to end index 
+        info:
+        examples:
+  equalsIgnoreCase:
+        name: equalsIgnoreCase
+        params: 
+            - string
+        returns: boolean
+        shortInfo: Returns true if the given string is equal to the string 
+        info:
+        examples:
+  toString:
+        name: toString
+        params: []
+        returns: string
+        shortInfo: Returns the object as string 
+        info:
+        examples:
+  matches:
+        name: matches
+        params: 
+            - string
+        returns: boolean
+        shortInfo: Returns true if the passed regular expression matches the string 
+        info:
+        examples:
+  replaceAll:
+        name: replaceAll
+        params: 
+            - string
+            - string
+        returns: string
+        shortInfo: Replaces all the occurences of the first search string to that of the second replacement string 
+        info:
+        examples:
+  replaceFirst:
+        name: replaceFirst
+        params: 
+            - string
+            - string
+        returns: string
+        shortInfo: Replaces the first occurences of the first search string to that of the second replacement string 
+        info:
+        examples:
+  toList:
+        name: toList
+        params:
+            - seperator: String
+        returns: List
+        shortInfo: Returns an list with the seperator as delimiter
+        info:
+        examples:
+  toMap:
+        name: toMap
+        params: []
+        returns: Map
+        shortInfo: Returns the map from the specified json-formatted string
+        info:
+        examples:
+  toDate:
+        name: toDate
+        params: []
+        returns: DateTime
+        shortInfo: Returns the string as date obj, throws error if not parsed
+        info:
+        examples: 
+  toTime:
+        name: toTime
+        params: []
+        returns: DateTime
+        shortInfo: Returns the string as datetime obj
+        info:
+        examples:  
+  executeXPath:
+        name: executeXPath
+        params:
+          - selection : String
+        returns: String
+        shortInfo: Returns the selection as formatted string from the string obj. The string should hold either XML/Json format 
+        info:
+        examples:
+  toXML:
+        name: toXML
+        params: []
+        returns: String
+        shortInfo: Converts the string to xml
+        info:
+        examples:  
+  toLong:
+        name: toLong
+        params: []
+        returns: Long 
+        shortInfo: Converts the string to Long, even hexadecimal
+        info:
+        examples:  
+  toXmlList:
+        name: toXmlList
+        params: []
+        returns: List
+        shortInfo: Converts the string to xml
+        info:
+        examples:  
+  getJSON:
+        name: getJSON
+        params: []
+        returns: Map
+        shortInfo: Converts the string to map as Json
+        info:
+        examples:  
+  toJSONList:
+        name: toJSONList
+        params: []
+        returns: List
+        shortInfo: Converts the string to list as Json
+        info:
+        examples:  
+  leftPad:
+        name: leftPad
+        params: 
+            - string
+            - bigint
+        returns: string
+        shortInfo: Returns the string with specified whitespace chars padded to its left. 
+        info:
+        examples:
+  rightPad:
+        name: rightPad
+        params: 
+            - string
+            - bigint
+        returns: string
+        shortInfo: Returns the string with specified whitespace chars padded to its right.
+        info:
+        examples:
+  abs:
+      name: abs
+      params:
+        - number : Bigint
+      returns: Bigint
+      shortInfo: Returns the absolute value of the number
+      info:
+      examples:
+  cos:
+        name: cos
+        params:
+          - number: Bigint
+        returns: Decimal
+        shortInfo: Retuns cosine of an angle as decimal
+        info:
+        examples:
+  sin:
+        name: sin
+        params:
+          - number: Bigint
+        returns: Decimal
+        shortInfo: Returns sine of angle as decimal
+        info:
+        examples:
+  tan:
+        name: tan
+        params:
+          - number: Bigint
+        returns: Decimal
+        shortInfo: Returns tan of angle as decimal
+        info:
+        examples:
+  log:
+        name: log
+        params:
+          - number: Bigint
+        returns: Decimal
+        shortInfo: Returns logarithm value
+        info:
+        examples:
+  min:
+        name: min
+        params:
+          - number: Decimal
+        returns: Decimal
+        shortInfo: Returns minimimum of current number and given number
+        info:
+        examples:
+  max:
+        name: max
+        params:
+          - number: Decimal
+        returns: Decimal
+        shortInfo: Returns maximum of current number and given number
+        info:
+        examples:
+  exp:
+        name: exp
+        params: []
+        returns: Decimal
+        shortInfo: Returns e ^ of the number. Where e = 2.178
+        info:
+        examples:
+  power:
+        name: power
+        params: 
+          - number: Decimal
+        returns: Decimal
+        shortInfo: Returns the number to the power of given number.
+        info:
+        examples:
+  round:
+        name: round
+        params: 
+          - roundTimes: Decimal
+        returns: Decimal
+        shortInfo: Returns the number after rounding off decimal points till roundTimes.
+        info:
+        examples:
+  sqrt:
+        name: sqrt
+        params: [] 
+        returns: Decimal
+        shortInfo: Returns the positive square root of the number.
+        info:
+        examples:
+  toDecimal:
+        name: toDecimal
+        params: []
+        returns: Decimal
+        shortInfo: Converts the bigint to decimal
+        info:
+        examples:  
+  toHex:
+        name: toHex
+        params: []
+        returns: Bigint
+        shortInfo: Converts the int to hexadecimal
+        info:
+        examples:  
+  ceil:
+        name: ceil
+        params: 
+          - number: Decimal
+        returns: Bigint
+        shortInfo: Returns the smallest integer value that is bigger than or equal to the given number.
+        info:
+        examples:
+  floor:
+        name: floor
+        params: 
+          - number: Decimal
+        returns: Bigint
+        shortInfo: Returns the largest integer value that is smaller than or equal to the given number.
+        info:
+        examples:
+  randomNumber:
+        name: randomNumber
+        params: 
+          - maxValue: Bigint
+          - minValue: Bigint 
+        returns: Bigint
+        shortInfo: Returns an random number (0 - 2 billion). when max and min value are specified, returns values btw both inclusive. when only max is specified, it is excluded
+        info:
+        examples:
+  contains:
+        name: contains
+        params:
+          - string : String
+        returns: bool
+        shortInfo: Returns true if the passed value is present in the list
+        info:
+        examples:
+  get:
+        name: get
+        params:
+          - index: Bigint
+        returns: any
+        shortInfo: Returns element with specified index. 0-based indexes. 
+        info:
+        examples:
+  add:
+        name: add
+        params:
+          - element: any
+        returns: void
+        shortInfo: Adds the specified element to the list
+        info:
+        examples:
+  indexOf:
+        name: indexOf
+        params:
+          - element : any
+        returns: Bigint
+        shortInfo: Returns the index of the passed element
+        info:
+        examples:
+  lastindexOf:
+        name: lastindexOf
+        params:
+          - element : any
+        returns: Bigint
+        shortInfo: Returns the last occuring index of the passed element
+        info:
+        examples:
+  remove:
+        name: remove
+        params:
+          - index : Bigint
+        returns: any
+        shortInfo: Removes the element at specified index and returns int
+        info:
+        examples:
+  sort:
+        name: sort
+        params:
+          - ascending : boolean
+        returns: void
+        shortInfo: Sorts the elements in the list, if the ascending parameter is true, then sorts in ascending order and in descending if its false
+        info:
+        examples:
+  size:
+        name: size
+        params: []
+        returns: Bigint
+        shortInfo: Returns the total number of elements in the list
+        info:
+        examples:
+  distinct:
+        name: distinct
+        params: []
+        returns: List
+        shortInfo: Returns the list only distinct values, i.e duplicate values are removed
+        info:
+        examples:
+  intersect:
+        name: intersect
+        params: 
+          - list : List
+        returns: List
+        shortInfo: Returns common elements as list between the list and passed list
+        info:
+        examples:
+  isempty:
+        name: isempty
+        params: []
+        returns: boolean
+        shortInfo: Returns true if the list is empty and false otherwise
+        info:
+        examples:
+  sublist:
+        name: sublist
+        params: 
+          - startIndex: Bigint
+          - endIndex: Bigint
+        returns: List
+        shortInfo: Returns the sublist of the list starting from startIndex (inclusive) and ending with endIndex(exclusive). EndIndex is optional and if not specified will become list length
+        info:
+        examples:
+  clear:
+        name: clear
+        params: []
+        returns: void
+        shortInfo: Removes all the elements in the list
+        info:
+        examples:
+  removeAll:
+        name: removeAll
+        params: 
+          - removeList: List
+        returns: void
+        shortInfo: Removes all the elements of removeList present in the list
+        info:
+        examples:
+  addAll:
+        name: addAll
+        params: 
+          - newList: List
+        returns: void
+        shortInfo: Appends the elements in the newList to the list in the same order of newList. 
+        info:
+        examples:
+  removeElement:
+        name: removeElement
+        params: 
+          - element: any
+        returns: void
+        shortInfo: Removes the element from the list, silently ignored if the element is not present in list
+        info:
+        examples:
+  put:
+        name: put
+        params:
+          - key : any
+          - value: any
+        returns: void
+        shortInfo: Adds the value in the map with specified key, if the key already exists its overwritten with the new value
+        info:
+        examples:
+  putAll:
+        name: putAll
+        params:
+          - map : Map
+        returns: void
+        shortInfo: Adds the key-value in the given map to the map
+        info:
+        examples:
+  remove:
+        name: remove
+        params:
+          - key : any
+        returns: void
+        shortInfo: Removes the given key from the map, corresponding value is also removed
+        info:
+        examples:
+  clear:
+        name: clear
+        params: []
+        returns: void
+        shortInfo: Removes all the key value pairs in the map
+        info:
+        examples:
+  contains:
+        name: contains
+        params:
+          - string : String
+        returns: bool
+        shortInfo: Returns true if the passed value is present in the list
+        info:
+        examples:
+  size:
+        name: size
+        params: []
+        returns: Bigint
+        shortInfo: Returns the size of the map
+        info:
+        examples:
+  isEmpty:
+        name: isEmpty
+        params: []
+        returns: bool
+        shortInfo: Returns true if the map contains no key-value pairs and false otherwise
+        info:
+        examples:
+  containKey:
+        name: containKey
+        params:
+          - key : any
+        returns: bool
+        shortInfo: Returns true if the key is mapped to any value in map and false otherwise
+        info:
+        examples:
+  containValue:
+        name: containValue
+        params:
+          - value : any
+        returns: bool
+        shortInfo: Returns true if value is mapped to one or more keys and false otherwise
+        info:
+        examples:
+  keys:
+        name: keys
+        params: []
+        returns: List
+        shortInfo: Returns all the keys in the map as list
+        info:
+        examples:
+  get:
+        name: get
+        params: 
+          - key : any
+        returns: String
+        shortInfo: Returns value as string to the specified key
+        info:
+        examples:

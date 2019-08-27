@@ -34,16 +34,16 @@ void main() {
     });
 
     test('with escape chars', (){
-      parser = dg.build(start: dg.start);
+      parser = dg.build(start: dg.start).end();
       var input = """ 
-      //response.put("text",createdBy + " \nLast Modified on " + lastModifiedDate + " \n");
+      //response.put("text",createdBy + "\\nLast Modified on " + lastModifiedDate + "\\n");
       card = Map();
       """;
       var result = parser.parse(input);
 
       assert(result.isSuccess);
       expect(input.length, result.position);
-    }, skip: 'fails due to improper line comment implementation.');
+    });
   
   });
 
@@ -57,22 +57,18 @@ void main() {
       var input = '/* Hello  */';
       var result = parser.parse(input);
       assert(result.isSuccess);
-      expect('/', result.value[0]);
-      expect('*', result.value[1]);
-      expect(input.length - 4, result.value[2].length);
-      expect('*', result.value[3]);
-      expect('/', result.value[4]);
+      expect('/*', result.value[0]);
+      expect(input.length - 4, result.value[1].length);
+      expect('*/', result.value[2]);
     });
 
     test('with new lines', () {
       var input = '/* Hello \n  Hi \n Bye  */';
       var result = parser.parse(input);
       assert(result.isSuccess);
-      expect('/', result.value[0]);
-      expect('*', result.value[1]);
-      expect(input.length - 4, result.value[2].length);
-      expect('*', result.value[3]);
-      expect('/', result.value[4]);
+      expect('/*', result.value[0]);
+      expect(input.length - 4, result.value[1].length);
+      expect('*/', result.value[2]);
     });
 
     test('nested multi line comments', (){
@@ -85,8 +81,21 @@ void main() {
       */""";
       var result = parser.parse(input);
       assert(result.isSuccess);
-      expect(input.length, result.position);
+      expect(input.length, isNot(result.position));
     });
+    
+    test('nested error', () {
+
+      var input = """/*
+          /*
+      */""";
+      var result = parser.parse(input);
+      assert(result.isSuccess);
+      expect(input.length - 4, result.value[1].length);
+      
+    });
+
+
   });
 
   group("string", () {

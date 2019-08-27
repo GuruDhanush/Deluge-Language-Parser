@@ -1,4 +1,6 @@
 import 'package:DelugeDartParser/node.dart';
+import 'package:DelugeDartParser/server/document/sync.dart';
+import 'package:DelugeDartParser/server/validation/validation.dart';
 import 'package:petitparser/debug.dart';
 import 'package:petitparser/petitparser.dart';
 import 'package:test/test.dart';
@@ -582,17 +584,35 @@ void main() {
       var input = """ 
       if(true) {
         id = 1;
-      }
-      else if(true) {
+      }else if(true) {
         id = 2;
-      }
-      else {
+      }else {
         id = 3;
       }
       """;
       var result = parser.parse(input);
       assert(result.isSuccess);
     });
+
+
+    test('crash if', (){
+      var input = """
+      if(true){
+
+      }else if(false) {
+    
+      }else {
+    
+      }""";
+      var parser = DelugeParser();
+      var result = parser.parse(input);
+      Uri uri = Uri.tryParse('untitled:1');
+      Sync.newLineTokens[uri] = Token.newlineParser().token().matchesSkipping(input);
+      var diag = Validation.Validate(result.value,  uri);
+      expect(diag, isEmpty);
+      assert(result.isSuccess);
+    });
+
   });
 
   group('if null expression', () {
@@ -820,6 +840,16 @@ void main() {
     expect(sample.SAMPLE2.length, result.position);
   });
 
+  test('sample test 2 with startLoc', () {
+    var parser = DelugeParser();
+    Node.newLineToken = Token.newlineParser().token().matchesSkipping(sample.SAMPLE2);
+    var result = parser.parse(sample.SAMPLE2);
+
+    assert(result.isSuccess);
+    expect(sample.SAMPLE2.length, result.position);
+  });
+
+
   test('sample test 3', () {
     var parser = DelugeParser();
     var result = parser.parse(sample.SAMPLE3);
@@ -918,6 +948,16 @@ void main() {
     assert(exp.body[2] is LineError);
 
   });
+
+
+    test('nested', (){
+
+      var input = """
+      response = {"text":"*" + issue_key + " " + issue_name + "*","card":{"title":"","theme":"modern-inline"},"slides":{{"type":"list","title":"","data":{"*Status :* " + status,"*Assignee name :* " + assignee,"*Created on :* " + created_on,"*Due Date :* " + due_date,"*Severity :* " + severity}}}};
+      """;
+      var result = parser.parse(input);
+      assert(result.isSuccess);
+    });
 
   });
 

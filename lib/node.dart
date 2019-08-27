@@ -6,50 +6,54 @@ class Node {
   int start;
   int end;
 
-  Loc startLoc;
+  //Loc startLoc;
   int length;
-  Loc endLoc;
+  //Loc endLoc;
 
   Object val;
   Map extra = Map();
+  static List<Token> newLineToken = [];
+  static int _line = 0;
+  static int _offset = 0;
 
-  //Node.fromValue({this.val});
 
-  Node({this.start, this.end, this.startLoc, this.length, this.endLoc});
-  Node.fromId(id)
-      : this(
-            start: id.start,
-            end: id.stop,
-            startLoc: Loc(line: id.line, column: id.column),
-            length: id.length,
-            endLoc: Loc.fromLineColumn(id.buffer, id.stop));
+  Node({this.start, this.end, this.length});
 
-  int isInside(Loc loc) {
-    bool after = this.startLoc.isAfter(loc);
-    bool before = this.endLoc.isBefore(loc);
-    if (!after && before)
-      return 0;
-    else if (after && before)
-      return -1;
-    else if (!after && !before) return 1;
-
-    return 0;
+  Node.fromId(id, {bool isBlockType = false}) {
+    start = id.start;
+    end = id.stop;
+    length = id.length;
   }
 
-  bool isInsideLine(Loc loc) {
-    if (startLoc.line == loc.line) {
-      var col = loc.column - startLoc.column;
-      if (col <= length) {
-        return true;
-      }
+      
+  Node.fromIdWithEnd(id, {bool isBlockType = false}) {
+    start = id.start;
+    end = id.stop;
+    length = id.length;
+  }
+
+  bool isInside(int pos) {
+
+    if(start == null || end == null) {
+       return false;
     }
-    return false;
-  }
+    return  start <= pos && end > pos;
+  } 
 
   @override
   String toString() {
-    return '${startLoc.line}:${startLoc.column}';
+    return '${start}:${end}';
   }
+}
+
+
+class Trekken {
+
+  int start;
+  int stop;
+  int length;
+
+  Trekken(this.start, this.stop, this.length);
 }
 
 class EmptySpace extends Node {
@@ -67,6 +71,10 @@ class Loc {
     this.column = loc[1];
   }
 
+  Loc withCol(int _column) => Loc(line: line, column: _column);
+
+  Loc withLine(int _line) => Loc(line: _line, column: column);
+
   ///Checks whether the loc obj is before the given loc obj
   bool isBefore(Loc loc) {
     return this.line <= loc.line && this.column < loc.column;
@@ -83,6 +91,8 @@ class ExpressionStatement extends Node {
 
   ExpressionStatement({this.expression}) : super();
   ExpressionStatement.fromId({this.expression, id}) : super.fromId(id);
+  ExpressionStatement.fromIdWithEnd({this.expression, id})
+      : super.fromIdWithEnd(id);
 }
 
 class AssignmentExpression extends Node {
@@ -94,15 +104,16 @@ class AssignmentExpression extends Node {
   AssignmentExpression.fromId({this.left, this.ooperator, this.right, id})
       : super.fromId(id);
 
-  Hover onHover(Loc loc) {
-    if (left is Node && (left as Node).isInsideLine(loc)) {
-      var hover = Hover(
-          content:
-              MarkupContent(kind: MarkupKind.markdown, value: "Identifier ${(left as Node).startLoc.column}"));
-      return hover;
-    }
-    return null;
-  }
+  // Hover onHover(Loc loc) {
+  //   if (left is Node && (left as Node).isInsideLine(loc)) {
+  //     var hover = Hover(
+  //         content: MarkupContent(
+  //             kind: MarkupKind.markdown,
+  //             value: "Identifier ${(left as Node).startLoc.column}"));
+  //     return hover;
+  //   }
+  //   return null;
+  // }
 }
 
 class Identifier extends Node {
@@ -112,13 +123,13 @@ class Identifier extends Node {
   Identifier(this.name) : super();
   Identifier.fromId({this.name, this.rawValue, id}) : super.fromId(id);
 
-  int isInside(Loc loc) {
-    if(startLoc == null || length == null) return -1;
-    if(loc.line == startLoc.line && startLoc.column + length > loc.column) {
-      return 0;
-    }
-    return -1;
-  }
+  // int isInside(Loc loc) {
+  //   if (startLoc == null || length == null) return -1;
+  //   if (loc.line == startLoc.line && startLoc.column + length > loc.column) {
+  //     return 0;
+  //   }
+  //   return -1;
+  // }
 }
 
 class ForStatement extends Node {
@@ -129,7 +140,7 @@ class ForStatement extends Node {
 
   ForStatement({this.index, this.list, this.isIndex, this.body}) : super();
   ForStatement.fromId({this.index, this.list, this.isIndex, this.body, id})
-      : super.fromId(id);
+      : super.fromId(id, isBlockType: true);
 }
 
 class CallExpression extends Node {
@@ -219,6 +230,7 @@ class ReturnStatement extends Node {
 
   ReturnStatement({this.argument}) : super();
   ReturnStatement.fromId({this.argument, id}) : super.fromId(id);
+  ReturnStatement.fromIdWithEnd({this.argument, id}) : super.fromIdWithEnd(id);
 }
 
 class InfoExpression extends Node {
@@ -226,6 +238,7 @@ class InfoExpression extends Node {
 
   InfoExpression({this.argument}) : super();
   InfoExpression.fromId({this.argument, id}) : super.fromId(id);
+  InfoExpression.fromIdWithEnd({this.argument, id}) : super.fromIdWithEnd(id);
 }
 
 class IfExpression extends Node {
@@ -253,7 +266,7 @@ class IfStatement extends Node {
 
   IfStatement({this.test, this.consequent, this.alternate}) : super();
   IfStatement.fromId({this.test, this.consequent, this.alternate, id})
-      : super.fromId(id);
+      : super.fromId(id, isBlockType: true);
 }
 
 class BlockStatement extends Node {
@@ -261,6 +274,13 @@ class BlockStatement extends Node {
 
   BlockStatement({this.body}) : super();
   BlockStatement.fromId({this.body, id}) : super.fromId(id);
+  BlockStatement.fromIdWithEnd({this.body, id}) : super.fromIdWithEnd(id, isBlockType: true);
+
+  // bool isInsideBlock(Loc loc) =>
+  //     (loc.line > startLoc.line || //before line start
+  //         (loc.line == startLoc.line && loc.column >= startLoc.column)) && // same line start
+  //     (loc.line < endLoc.line ||  // after line end
+  //         (loc.line == endLoc.line && loc.column <= endLoc.column)); // same line end
 }
 
 class UnaryExpression extends Node {
@@ -291,7 +311,7 @@ class InvokeFunction extends Node {
   List<Object> args;
 
   InvokeFunction({this.identifier, this.args}) : super();
-  InvokeFunction.fromId({this.identifier, this.args, id}) : super.fromId(id);
+  InvokeFunction.fromId({this.identifier, this.args, id}) : super.fromId(id, isBlockType: true);
 }
 
 class CommentLine extends Node {
@@ -299,13 +319,17 @@ class CommentLine extends Node {
 
   CommentLine.fromId({this.value, id}) : super.fromId(id);
 
-  int isInside(Loc loc) {
-    return startLoc.line == loc.line && startLoc.column + length < loc.column ? 0 : -1;
-  }
+  // int isInside(Loc loc) {
+  //   return startLoc.line == loc.line && startLoc.column + length < loc.column
+  //       ? 0
+  //       : -1;
+  // }
 }
 
 class LineError extends Node {
   String error;
   LineError({this.error}) : super();
   LineError.fromId({this.error, id}) : super.fromId(id);
+  LineError.fromIdWithEnd({this.error, id}) : super.fromIdWithEnd(id);
+
 }

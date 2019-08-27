@@ -17,6 +17,7 @@ dependencies:
   just_debounce_it: ^3.0.0+1
   yaml: ^2.1.16
   path: ^1.6.4
+  benchmark_harness: ^1.0.5
 
 
 

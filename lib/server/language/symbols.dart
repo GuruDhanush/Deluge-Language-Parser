@@ -1,50 +1,75 @@
+import 'dart:io';
+
 import 'package:DelugeDartParser/node.dart';
 import 'package:DelugeDartParser/server/document/sync.dart';
+import 'package:DelugeDartParser/server/util.dart';
 import 'package:json_rpc_2/json_rpc_2.dart';
+import 'package:petitparser/petitparser.dart';
 
 class SymbolProvider {
   static register(Peer peer) {
     peer.registerMethod('textDocument/documentSymbol', onResolve);
   }
 
+  static List<SymbolInformation> symbols = [];
+
+  static treeTraverseSymbols(Object exp, Uri uri) {
+    if (exp is List) {
+      for (var line in exp) {
+        treeTraverseSymbols(line, uri);
+      }
+    } else if (exp is BlockStatement) {
+      for (var line in exp.body) {
+        treeTraverseSymbols(line, uri);
+      }
+    } else if (exp is ForStatement) {
+      treeTraverseSymbols(exp.index, uri);
+      treeTraverseSymbols(exp.body, uri);
+    } else if (exp is IfStatement) {
+      treeTraverseSymbols(exp.consequent, uri);
+      treeTraverseSymbols(exp.alternate, uri);
+    } else if (exp is ExpressionStatement) {
+      treeTraverseSymbols((exp.expression as List)[0], uri);
+    } else if (exp is AssignmentExpression) {
+      treeTraverseSymbols(exp.left, uri);
+    } else if (exp is Identifier) {
+      var line = findLine(exp.start, exp.end, Sync.newLineTokens[uri]);
+      if (line != null) {
+        symbols.add(SymbolInformation(
+            kind: SymbolKind.Variable,
+            name: exp.name,
+            location: Location(
+                uri: uri,
+                range: Range(
+                    start: Util.toPosition(line),
+                    end: Position(line: line.line, character: line.column + exp.length)))));
+      }
+    }
+  }
+  
+  //TODO: use binary search
+  static Loc findLine(int startPos, int endPos, List<Token> tokens) {
+    if(tokens == null) return null;
+    for (int i = 0; i < tokens.length; i++) {
+      var token = tokens[i];
+      if (token.stop > startPos) {
+         return Loc(line: i, column: startPos - (i == 0 ? 0 : tokens[i-1].stop));
+      }
+    }
+
+    return null;
+  }
+
   static onResolve(Parameters param) {
     Uri uri = param['textDocument']['uri'].asUri;
-    List<SymbolInformation> symbols = [];
 
     if (!Sync.openFiles.containsKey(uri)) {
       return null;
     }
 
     var parseResult = Sync.openFiles[uri];
-
-    parseResult.forEach((line) {
-      if (line is ForStatement) {
-      } else if (line is IfStatement) {
-      } else if (line is ExpressionStatement) {
-        var exp = (line.expression as List)[0];
-        if (exp is AssignmentExpression) {
-          if (exp.left is Identifier) {
-            var iden = exp.left as Identifier;
-            symbols.add(SymbolInformation(
-                kind: SymbolKind.Variable,
-                name: iden.name,
-                location: Location(
-                    uri: uri,
-                    range: Range(
-                        start: Position(
-                            line: line.startLoc.line,
-                            character: line.startLoc.column),
-                        end: Position(
-                            line: line.startLoc.line,
-                            character: line.startLoc.column + line.length)
-                        )
-                    )
-                  )
-                );
-          }
-        }
-      }
-    });
+    symbols = [];
+    treeTraverseSymbols(parseResult, uri);
 
     return SymbolInformation.toJsonFromList(symbols);
   }

@@ -159,11 +159,16 @@ const String SAMPLE1 = """
 
 """;
 
-const String SAMPLE2 = """
-
-    message = Map();
+const String SAMPLE2 = """message = Map();
+    res = invokeurl
+	  [
+        url :1
+        type : 1
+        connection:1 
+	  ];
     cfNme = "";
-    info cfNme;
+    """;
+    var k = """info cfNme;
     fType = options.get("type");
     shareChat = options.get("share");
     shareLink = options.get("link");

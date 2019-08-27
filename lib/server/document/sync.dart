@@ -7,6 +7,7 @@ import 'package:json_rpc_2/json_rpc_2.dart';
 import 'dart:io';
 import 'package:DelugeDartParser/parser.dart';
 import 'package:just_debounce_it/just_debounce_it.dart';
+import 'package:petitparser/petitparser.dart';
 import 'package:tuple/tuple.dart';
 import '../messaging/message.dart';
 import 'package:quiver/collection.dart';
@@ -18,22 +19,31 @@ const int maxFiles = 10;
 class Sync {
   static Peer _peer;
   static LinkedLruHashMap<Uri, List> openFiles = LinkedLruHashMap<Uri, List>(maximumSize: maxFiles);
+  static LinkedLruHashMap<Uri, List> newLineTokens = LinkedLruHashMap<Uri, List>(maximumSize: maxFiles);
+  static Map documentation = Map();
 
   //TODO: Make the debounce robust
   static parseFile(Uri uri, String data) {
     
     String extraText = """\n //""";
-    var result = ParserDG.parse(data + extraText);
+    String fullText = data + extraText;
+    var result = DelugeParser().parse(fullText);
     if(result.isSuccess) {
       openFiles[uri] = result.value;
-      var validations = Validation.Validate(result.value.cast<Node>());
+      var validations = Validation.Validate(result.value, uri);
       Diagnostics.publishDiagnostics(uri, validations);
+      newLineTokens[uri] = Token.newlineParser().token().matchesSkipping(fullText);
     }
+    else {
+      openFiles.remove(uri);
+    }
+
     Diagnostics.publishParserStatus(result.isSuccess);
 
 
   
   }
+
 
 
   static register(Peer peer) {
@@ -164,7 +174,7 @@ class Position {
     character = params['character'].asInt;
   }
 
-  Map toJson() => {'line': line-1, 'character': character-1};
+  Map toJson() => {'line': line, 'character': character};
 }
 
 class Range {

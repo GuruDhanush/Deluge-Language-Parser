@@ -1,0 +1,876 @@
+{
+  "functions": {
+    "getUrl": {
+      "name": "getUrl",
+      "params": [
+        {
+          "url": "String"
+        },
+        {
+          "simple": "boolean"
+        }
+      ],
+      "returns": "Map",
+      "shortInfo": "Performs an get operation in url and returns the response as string. If the simple (optional) is false then returns the full response",
+      "info": null,
+      "examples": null
+    },
+    "postUrl": {
+      "name": "postUrl",
+      "params": [
+        {
+          "url": "String"
+        },
+        {
+          "body": "Map"
+        },
+        {
+          "header": "Map"
+        },
+        {
+          "simple": "boolean"
+        }
+      ],
+      "returns": "Map",
+      "shortInfo": "Performs an post operation in url with body as Map and header as Map and returns the response as string. If the simple (optional) is false then returns the full response",
+      "info": null,
+      "examples": null
+    },
+    "encodeUrl": {
+      "name": "getUrl",
+      "params": [
+        {
+          "url": "String"
+        }
+      ],
+      "returns": "String",
+      "shortInfo": "Encodes the url and returns as String",
+      "info": null,
+      "examples": null
+    },
+    "base64Encode": {
+      "name": "base64Encode",
+      "params": [
+        {
+          "text": "String"
+        }
+      ],
+      "returns": "String",
+      "shortInfo": "Encodes the text as base64 string",
+      "info": null,
+      "examples": null
+    },
+    "base64Decode": {
+      "name": "base64Decode",
+      "params": [
+        {
+          "text": "String"
+        }
+      ],
+      "returns": "String",
+      "shortInfo": "Decodes the base64 encoded text as String",
+      "info": null,
+      "examples": null
+    },
+    "urlDecode": {
+      "name": "urlDecode",
+      "params": [
+        {
+          "url": "String"
+        }
+      ],
+      "returns": "String",
+      "shortInfo": "Decodes the encoded url and returns as String",
+      "info": null,
+      "examples": null
+    },
+    "urlEncode": {
+      "name": "urlEncode",
+      "params": [
+        {
+          "url": "String"
+        }
+      ],
+      "returns": "String",
+      "shortInfo": "Encodes the url and returns as String",
+      "info": null,
+      "examples": null
+    },
+    "aesDecode": {
+      "name": "aesDecode",
+      "params": [
+        {
+          "key": "String"
+        },
+        {
+          "encrypted_text": "String"
+        }
+      ],
+      "returns": "String",
+      "shortInfo": "Decrypts the encrypted_text with the key using aes and returns the decrypted string",
+      "info": null,
+      "examples": null
+    },
+    "aesEncode": {
+      "name": "aesEncode",
+      "params": [
+        {
+          "key": "String"
+        },
+        {
+          "text": "String"
+        }
+      ],
+      "returns": "String",
+      "shortInfo": "Encrypts the text with the key using aes and returns the encrypted string",
+      "info": null,
+      "examples": null
+    },
+    "contains": {
+      "name": "contains",
+      "params": [
+        "string"
+      ],
+      "returns": "boolean",
+      "shortInfo": "Returns true if the passed string is substring.",
+      "info": "checks whether the string in the params is a substring of current one. The search\nis a **case sensitive** search. Look for [containsIgnoreCase] for case insensitive search.\n",
+      "examples": "Typical use\n```dg\n    \"Hello World\".contains(\"World\"); // returns true\n```\nChecking for empty string. Empty string always returns true\n```dg\n    \"Hello World\".contains(\"\"); //returns true\n```\n"
+    },
+    "endsWith": {
+      "name": "endsWith",
+      "params": [
+        "string"
+      ],
+      "returns": "boolean",
+      "shortInfo": "Returns true if the string ends with the given string",
+      "info": null,
+      "examples": null
+    },
+    "startsWith": {
+      "name": "startsWith",
+      "params": [
+        "string"
+      ],
+      "returns": "string",
+      "shortInfo": "Returns true if the string starts with the given string",
+      "info": null,
+      "examples": null
+    },
+    "remove": {
+      "name": "remove",
+      "params": "string",
+      "returns": "string",
+      "shortInfo": "Removes the given string from the string.",
+      "info": null,
+      "examples": null
+    },
+    "removeFirstOccurence": {
+      "name": "removeFirstOccurence",
+      "params": "string",
+      "returns": "string",
+      "shortInfo": "Removes the first occurence of the given string from the string.",
+      "info": null,
+      "examples": null
+    },
+    "removeLastOccurence": {
+      "name": "removeLastOccurence",
+      "params": [
+        "string"
+      ],
+      "returns": "string",
+      "shortInfo": "Removes the last occurence of the given string from the string.",
+      "info": null,
+      "examples": null
+    },
+    "getSuffix": {
+      "name": "getSuffix",
+      "params": [
+        "string"
+      ],
+      "returns": "string",
+      "shortInfo": "Returns the remaining string after the given string.",
+      "info": null,
+      "examples": null
+    },
+    "getPrefix": {
+      "name": "getPrefix",
+      "params": [
+        "string"
+      ],
+      "returns": "string",
+      "shortInfo": "Returns the remaining string before the given string.",
+      "info": null,
+      "examples": null
+    },
+    "toUpperCase": {
+      "name": "toUpperCase",
+      "params": [],
+      "returns": "string",
+      "shortInfo": "Returns the string as uppercase",
+      "info": null,
+      "examples": null
+    },
+    "toLowerCase": {
+      "name": "toLowerCase",
+      "params": [],
+      "returns": "string",
+      "shortInfo": "Returns the string as lowercase",
+      "info": null,
+      "examples": null
+    },
+    "getAlphaNumeric": {
+      "name": "getAlphaNumeric",
+      "params": [],
+      "returns": "string",
+      "shortInfo": "Returns the string containing alphanumeric characters only",
+      "info": null,
+      "examples": null
+    },
+    "getAlpha": {
+      "name": "getAlpha",
+      "params": [],
+      "returns": "string",
+      "shortInfo": "Returns the string containing only alphabetic characters",
+      "info": null,
+      "examples": null
+    },
+    "removeAllAlphaNumeric": {
+      "name": "removeAllAlphaNumeric",
+      "params": [],
+      "returns": "string",
+      "shortInfo": "Returns the string after removing all the alphanumeric characters",
+      "info": null,
+      "examples": null
+    },
+    "removeAllAlpha": {
+      "name": "removeAllAlpha",
+      "params": [],
+      "returns": "string",
+      "shortInfo": "Returns the string after removing all the alphabetic characters",
+      "info": null,
+      "examples": null
+    },
+    "length": {
+      "name": "length",
+      "params": [],
+      "returns": "bigint",
+      "shortInfo": "Returns the length of the string in bigint",
+      "info": null,
+      "examples": null
+    },
+    "getOccurence": {
+      "name": "getOccurence",
+      "params": [
+        "string"
+      ],
+      "returns": "bigint",
+      "shortInfo": "Returns the count of given string present as substring in the string",
+      "info": null,
+      "examples": null
+    },
+    "indexOf": {
+      "name": "indexOf",
+      "params": [
+        "string"
+      ],
+      "returns": "bigint",
+      "shortInfo": "Returns the index of first occurence of given string as substring in the string",
+      "info": null,
+      "examples": null
+    },
+    "lastIndexOf": {
+      "name": "lastIndexOf",
+      "params": [
+        "string"
+      ],
+      "returns": "bigint",
+      "shortInfo": "Returns the index of last occurence of given string as substring in the string",
+      "info": null,
+      "examples": null
+    },
+    "substring": {
+      "name": "substring",
+      "params": [
+        "bigint",
+        "bigint"
+      ],
+      "returns": "string",
+      "shortInfo": "Returns the string from specified start index to end index",
+      "info": null,
+      "examples": null
+    },
+    "equalsIgnoreCase": {
+      "name": "equalsIgnoreCase",
+      "params": [
+        "string"
+      ],
+      "returns": "boolean",
+      "shortInfo": "Returns true if the given string is equal to the string",
+      "info": null,
+      "examples": null
+    },
+    "matches": {
+      "name": "matches",
+      "params": [
+        "string"
+      ],
+      "returns": "boolean",
+      "shortInfo": "Returns true if the passed regular expression matches the string",
+      "info": null,
+      "examples": null
+    },
+    "replaceAll": {
+      "name": "replaceAll",
+      "params": [
+        "string",
+        "string"
+      ],
+      "returns": "string",
+      "shortInfo": "Replaces all the occurences of the first search string to that of the second replacement string",
+      "info": null,
+      "examples": null
+    },
+    "replaceFirst": {
+      "name": "replaceFirst",
+      "params": [
+        "string",
+        "string"
+      ],
+      "returns": "string",
+      "shortInfo": "Replaces the first occurences of the first search string to that of the second replacement string",
+      "info": null,
+      "examples": null
+    },
+    "toList": {
+      "name": "toList",
+      "params": [
+        {
+          "seperator": "String"
+        }
+      ],
+      "returns": "List",
+      "shortInfo": "Returns an list with the seperator as delimiter",
+      "info": null,
+      "examples": null
+    },
+    "toMap": {
+      "name": "toMap",
+      "params": [],
+      "returns": "Map",
+      "shortInfo": "Returns the map from the specified json-formatted string",
+      "info": null,
+      "examples": null
+    },
+    "toDate": {
+      "name": "toDate",
+      "params": [],
+      "returns": "DateTime",
+      "shortInfo": "Returns the string as date obj, throws error if not parsed",
+      "info": null,
+      "examples": null
+    },
+    "toTime": {
+      "name": "toTime",
+      "params": [],
+      "returns": "DateTime",
+      "shortInfo": "Returns the string as datetime obj",
+      "info": null,
+      "examples": null
+    },
+    "executeXPath": {
+      "name": "executeXPath",
+      "params": [
+        {
+          "selection": "String"
+        }
+      ],
+      "returns": "String",
+      "shortInfo": "Returns the selection as formatted string from the string obj. The string should hold either XML/Json format",
+      "info": null,
+      "examples": null
+    },
+    "toXML": {
+      "name": "toXML",
+      "params": [],
+      "returns": "String",
+      "shortInfo": "Converts the string to xml",
+      "info": null,
+      "examples": null
+    },
+    "toLong": {
+      "name": "toLong",
+      "params": [],
+      "returns": "Long",
+      "shortInfo": "Converts the string to Long, even hexadecimal",
+      "info": null,
+      "examples": null
+    },
+    "toXmlList": {
+      "name": "toXmlList",
+      "params": [],
+      "returns": "List",
+      "shortInfo": "Converts the string to xml",
+      "info": null,
+      "examples": null
+    },
+    "getJSON": {
+      "name": "getJSON",
+      "params": [],
+      "returns": "Map",
+      "shortInfo": "Converts the string to map as Json",
+      "info": null,
+      "examples": null
+    },
+    "toJSONList": {
+      "name": "toJSONList",
+      "params": [],
+      "returns": "List",
+      "shortInfo": "Converts the string to list as Json",
+      "info": null,
+      "examples": null
+    },
+    "leftPad": {
+      "name": "leftPad",
+      "params": [
+        "string",
+        "bigint"
+      ],
+      "returns": "string",
+      "shortInfo": "Returns the string with specified whitespace chars padded to its left.",
+      "info": null,
+      "examples": null
+    },
+    "rightPad": {
+      "name": "rightPad",
+      "params": [
+        "string",
+        "bigint"
+      ],
+      "returns": "string",
+      "shortInfo": "Returns the string with specified whitespace chars padded to its right.",
+      "info": null,
+      "examples": null
+    },
+    "abs": {
+      "name": "abs",
+      "params": [
+        {
+          "number": "Bigint"
+        }
+      ],
+      "returns": "Bigint",
+      "shortInfo": "Returns the absolute value of the number",
+      "info": null,
+      "examples": null
+    },
+    "cos": {
+      "name": "cos",
+      "params": [
+        {
+          "number": "Bigint"
+        }
+      ],
+      "returns": "Decimal",
+      "shortInfo": "Retuns cosine of an angle as decimal",
+      "info": null,
+      "examples": null
+    },
+    "sin": {
+      "name": "sin",
+      "params": [
+        {
+          "number": "Bigint"
+        }
+      ],
+      "returns": "Decimal",
+      "shortInfo": "Returns sine of angle as decimal",
+      "info": null,
+      "examples": null
+    },
+    "tan": {
+      "name": "tan",
+      "params": [
+        {
+          "number": "Bigint"
+        }
+      ],
+      "returns": "Decimal",
+      "shortInfo": "Returns tan of angle as decimal",
+      "info": null,
+      "examples": null
+    },
+    "log": {
+      "name": "log",
+      "params": [
+        {
+          "number": "Bigint"
+        }
+      ],
+      "returns": "Decimal",
+      "shortInfo": "Returns logarithm value",
+      "info": null,
+      "examples": null
+    },
+    "min": {
+      "name": "min",
+      "params": [
+        {
+          "number": "Decimal"
+        }
+      ],
+      "returns": "Decimal",
+      "shortInfo": "Returns minimimum of current number and given number",
+      "info": null,
+      "examples": null
+    },
+    "max": {
+      "name": "max",
+      "params": [
+        {
+          "number": "Decimal"
+        }
+      ],
+      "returns": "Decimal",
+      "shortInfo": "Returns maximum of current number and given number",
+      "info": null,
+      "examples": null
+    },
+    "exp": {
+      "name": "exp",
+      "params": [],
+      "returns": "Decimal",
+      "shortInfo": "Returns e ^ of the number. Where e = 2.178",
+      "info": null,
+      "examples": null
+    },
+    "power": {
+      "name": "power",
+      "params": [
+        {
+          "number": "Decimal"
+        }
+      ],
+      "returns": "Decimal",
+      "shortInfo": "Returns the number to the power of given number.",
+      "info": null,
+      "examples": null
+    },
+    "round": {
+      "name": "round",
+      "params": [
+        {
+          "roundTimes": "Decimal"
+        }
+      ],
+      "returns": "Decimal",
+      "shortInfo": "Returns the number after rounding off decimal points till roundTimes.",
+      "info": null,
+      "examples": null
+    },
+    "sqrt": {
+      "name": "sqrt",
+      "params": [],
+      "returns": "Decimal",
+      "shortInfo": "Returns the positive square root of the number.",
+      "info": null,
+      "examples": null
+    },
+    "toDecimal": {
+      "name": "toDecimal",
+      "params": [],
+      "returns": "Decimal",
+      "shortInfo": "Converts the bigint to decimal",
+      "info": null,
+      "examples": null
+    },
+    "toHex": {
+      "name": "toHex",
+      "params": [],
+      "returns": "Bigint",
+      "shortInfo": "Converts the int to hexadecimal",
+      "info": null,
+      "examples": null
+    },
+    "ceil": {
+      "name": "ceil",
+      "params": [
+        {
+          "number": "Decimal"
+        }
+      ],
+      "returns": "Bigint",
+      "shortInfo": "Returns the smallest integer value that is bigger than or equal to the given number.",
+      "info": null,
+      "examples": null
+    },
+    "floor": {
+      "name": "floor",
+      "params": [
+        {
+          "number": "Decimal"
+        }
+      ],
+      "returns": "Bigint",
+      "shortInfo": "Returns the largest integer value that is smaller than or equal to the given number.",
+      "info": null,
+      "examples": null
+    },
+    "randomNumber": {
+      "name": "randomNumber",
+      "params": [
+        {
+          "maxValue": "Bigint"
+        },
+        {
+          "minValue": "Bigint"
+        }
+      ],
+      "returns": "Bigint",
+      "shortInfo": "Returns an random number (0 - 2 billion). when max and min value are specified, returns values btw both inclusive. when only max is specified, it is excluded",
+      "info": null,
+      "examples": null
+    },
+    "get": {
+      "name": "get",
+      "params": [
+        {
+          "index": "Bigint"
+        }
+      ],
+      "returns": "any",
+      "shortInfo": "Returns element with specified index. 0-based indexes.",
+      "info": null,
+      "examples": null
+    },
+    "add": {
+      "name": "add",
+      "params": [
+        {
+          "element": "any"
+        }
+      ],
+      "returns": "void",
+      "shortInfo": "Adds the specified element to the list",
+      "info": null,
+      "examples": null
+    },
+    "lastindexOf": {
+      "name": "lastindexOf",
+      "params": [
+        {
+          "element": "any"
+        }
+      ],
+      "returns": "Bigint",
+      "shortInfo": "Returns the last occuring index of the passed element",
+      "info": null,
+      "examples": null
+    },
+    "sort": {
+      "name": "sort",
+      "params": [
+        {
+          "ascending": "boolean"
+        }
+      ],
+      "returns": "void",
+      "shortInfo": "Sorts the elements in the list, if the ascending parameter is true, then sorts in ascending order and in descending if its false",
+      "info": null,
+      "examples": null
+    },
+    "size": {
+      "name": "size",
+      "params": [],
+      "returns": "Bigint",
+      "shortInfo": "Returns the total number of elements in the list",
+      "info": null,
+      "examples": null
+    },
+    "distinct": {
+      "name": "distinct",
+      "params": [],
+      "returns": "List",
+      "shortInfo": "Returns the list only distinct values, i.e duplicate values are removed",
+      "info": null,
+      "examples": null
+    },
+    "intersect": {
+      "name": "intersect",
+      "params": [
+        {
+          "list": "List"
+        }
+      ],
+      "returns": "List",
+      "shortInfo": "Returns common elements as list between the list and passed list",
+      "info": null,
+      "examples": null
+    },
+    "isempty": {
+      "name": "isempty",
+      "params": [],
+      "returns": "boolean",
+      "shortInfo": "Returns true if the list is empty and false otherwise",
+      "info": null,
+      "examples": null
+    },
+    "sublist": {
+      "name": "sublist",
+      "params": [
+        {
+          "startIndex": "Bigint"
+        },
+        {
+          "endIndex": "Bigint"
+        }
+      ],
+      "returns": "List",
+      "shortInfo": "Returns the sublist of the list starting from startIndex (inclusive) and ending with endIndex(exclusive). EndIndex is optional and if not specified will become list length",
+      "info": null,
+      "examples": null
+    },
+    "clear": {
+      "name": "clear",
+      "params": [],
+      "returns": "void",
+      "shortInfo": "Removes all the elements in the list",
+      "info": null,
+      "examples": null
+    },
+    "removeAll": {
+      "name": "removeAll",
+      "params": [
+        {
+          "removeList": "List"
+        }
+      ],
+      "returns": "void",
+      "shortInfo": "Removes all the elements of removeList present in the list",
+      "info": null,
+      "examples": null
+    },
+    "addAll": {
+      "name": "addAll",
+      "params": [
+        {
+          "newList": "List"
+        }
+      ],
+      "returns": "void",
+      "shortInfo": "Appends the elements in the newList to the list in the same order of newList.",
+      "info": null,
+      "examples": null
+    },
+    "removeElement": {
+      "name": "removeElement",
+      "params": [
+        {
+          "element": "any"
+        }
+      ],
+      "returns": "void",
+      "shortInfo": "Removes the element from the list, silently ignored if the element is not present in list",
+      "info": null,
+      "examples": null
+    },
+    "put": {
+      "name": "put",
+      "params": [
+        {
+          "key": "any"
+        },
+        {
+          "value": "any"
+        }
+      ],
+      "returns": "void",
+      "shortInfo": "Adds the value in the map with specified key, if the key already exists its overwritten with the new value",
+      "info": null,
+      "examples": null
+    },
+    "putAll": {
+      "name": "putAll",
+      "params": [
+        {
+          "map": "Map"
+        }
+      ],
+      "returns": "void",
+      "shortInfo": "Adds the key-value in the given map to the map",
+      "info": null,
+      "examples": null
+    },
+    "isEmpty": {
+      "name": "isEmpty",
+      "params": [],
+      "returns": "bool",
+      "shortInfo": "Returns true if the map contains no key-value pairs and false otherwise",
+      "info": null,
+      "examples": null
+    },
+    "containKey": {
+      "name": "containKey",
+      "params": [
+        {
+          "key": "any"
+        }
+      ],
+      "returns": "bool",
+      "shortInfo": "Returns true if the key is mapped to any value in map and false otherwise",
+      "info": null,
+      "examples": null
+    },
+    "containValue": {
+      "name": "containValue",
+      "params": [
+        {
+          "value": "any"
+        }
+      ],
+      "returns": "bool",
+      "shortInfo": "Returns true if value is mapped to one or more keys and false otherwise",
+      "info": null,
+      "examples": null
+    },
+    "keys": {
+      "name": "keys",
+      "params": [],
+      "returns": "List",
+      "shortInfo": "Returns all the keys in the map as list",
+      "info": null,
+      "examples": null
+    },
+    "trim": {
+      "name": "trim",
+      "params": [],
+      "returns": "String",
+      "shortInfo": "Returns the string after trimming whitespaces on both ends",
+      "info": null,
+      "examples": null
+    },
+    "sendemail": {
+      "shortInfo": "Sends an email"
+
+    },
+    "sendsms": {
+      "shortInfo": "Sends an sms"
+
+    },
+    "pushNotification": {
+      "shortInfo": "Sends an push notification"
+    },
+    "invokeurl": {
+      "shortInfo": "Used to invoke an connection"
+    },
+    "Map": {
+      "shortInfo": "Hold key-value pairs"
+    },
+    "List": {
+      "shortInfo": "Holds the elements in an orderly fashion"
+    },
+    "Collection": {
+      "shortInfo": "Can store both list elememts or map, only one at once"
+    }
+
+  }
+}

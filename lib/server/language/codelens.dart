@@ -1,6 +1,8 @@
 import 'package:DelugeDartParser/node.dart';
 import 'package:DelugeDartParser/server/document/sync.dart';
+import 'package:DelugeDartParser/server/util.dart';
 import 'package:json_rpc_2/json_rpc_2.dart';
+import 'package:petitparser/petitparser.dart';
 
 class CodeLensProvider {
   static register(Peer peer) {
@@ -8,61 +10,110 @@ class CodeLensProvider {
     peer.registerMethod('codeLens/resolve', resolveCodeLens);
   }
 
-  static provideCodeLens(Parameters param) {
-    Uri uri = param['textDocument']['uri'].asUri;
-    List<CodeLens> codeLens = [];
+  static List<CodeLens> codeLens = [];
 
-    var parseResult = Sync.openFiles[uri];
+  static treeTraversalCodeLens(Object exp, Uri uri) {
+    if (exp is List) {
+      for (var line in exp) {
+        treeTraversalCodeLens(line, uri);
+      }
+    } else if (exp is BlockStatement) {
+      for (var line in exp.body) {
+        treeTraversalCodeLens(line, uri);
+      }
+    } else if (exp is ForStatement) {
+      treeTraversalCodeLens(exp.index, uri);
+      treeTraversalCodeLens(exp.body, uri);
+    } else if (exp is IfStatement) {
+      treeTraversalCodeLens(exp.consequent, uri);
+      treeTraversalCodeLens(exp.alternate, uri);
+    } else if (exp is ExpressionStatement) {
+      treeTraversalCodeLens((exp.expression as List)[0], uri);
+    } else if (exp is AssignmentExpression) {
+      treeTraversalCodeLens(exp.right, uri);
+    } else if (exp is InvokeFunction) {
+      exp.args.forEach((arg) {
+        var prop = arg as ObjectProperty;
+        if (prop.key is Identifier &&
+            (prop.key as Identifier).name.toLowerCase() == 'message') {
+          var iden = prop.key as Identifier;
+          var content = '';
+          if (prop.value is StringLiteral) {
+            var stringData = (prop.value as StringLiteral).raw;
+            content =
+                stringData.substring(1).substring(0, stringData.length - 2);
+          }
+          if(prop.value is BinaryExpression) {
+            content = ConvertBinaryToString(prop.value);
+          }
 
-    parseResult.forEach((line) {
-      if (line is ForStatement) {
-      } else if (line is IfStatement) {
-      } else if (line is ExpressionStatement) {
-        var exp = (line.expression as List)[0];
-        if (exp is AssignmentExpression) {
-          if (exp.right is InvokeFunction) {
-            var invFunc = exp.right as InvokeFunction;
-            
-            invFunc.args.forEach((arg) {
-              var prop = arg as ObjectProperty;
-              if(prop.key is Identifier && (prop.key as Identifier).name.toLowerCase() == 'message') {
-                var iden = prop.key as Identifier;
-                var content = '';
-                if(prop.value is StringLiteral) {
-                  var stringData = (prop.value as StringLiteral).raw;
-                  content = stringData.substring(1).substring(0, stringData.length-2);
-                }
+          var loc = findLine(iden.start, iden.end, Sync.newLineTokens[uri]);
 
-                codeLens.add(CodeLens(
-                command: Command(title: 'Show View', command: 'delugelang.showView', arg: content),
+          if(loc != null) {
+
+            codeLens.add(CodeLens(
+                command: Command(
+                    title: 'Show View',
+                    command: 'delugelang.showView',
+                    arg: content),
                 range: Range(
-                    start: Position(
-                        line: iden.startLoc.line,
-                        character: iden.startLoc.column),
+                    start: Util.toPosition(loc),
                     end: Position(
-                        line: iden.startLoc.line,
-                        character: iden.startLoc.column + iden.length)
-                      )
-                )
-                );
-              }
-
-            });
-
-            
+                        line: loc.line,
+                        character: loc.column + iden.length))));
           }
         }
-      }
-    });
-
-    return CodeLens.toJsonFromList(codeLens); 
+      });
+    }
   }
+
+  //TODO: use binary search
+  static Loc findLine(int startPos, int endPos, List<Token> tokens) {
+    for (int i = 0; i < tokens.length; i++) {
+      var token = tokens[i];
+      if (token.stop > startPos) {
+         return Loc(line: i, column: startPos - (i == 0 ? 0 : tokens[i-1].stop));
+      }
+    }
+
+    return null;
+  }
+
+  static String ConvertBinaryToString(BinaryExpression expression) {
+
+    var right = expression.right;
+    var left = expression.left;
+    String data = '';
+    if(right is StringLiteral) {
+      data = (right.value[1] as List).join('');
+    }
+    else {
+      data = ' {Variable} ' + data;
+    }
+    if(left is BinaryExpression) {
+      data = ConvertBinaryToString(left) + data;
+    }
+    if(left is StringLiteral) {
+      data = (left.value[1] as List).join('') + data;
+    }
+    return data;
+
+  }
+
+  static provideCodeLens(Parameters param) {
+    Uri uri = param['textDocument']['uri'].asUri;
+    var parseResult = Sync.openFiles[uri];
+
+    codeLens = [];
+    treeTraversalCodeLens(parseResult, uri);
   
-  //TODO: potentially stale data
+    return CodeLens.toJsonFromList(codeLens);
+  }
+
+  //TODO: potentially stale data Will resolve after incremental compilation
   static resolveCodeLens(Parameters param) {
     return param;
   }
-
 }
 
 class Command {
@@ -73,7 +124,11 @@ class Command {
   //List arguments; using single arg
   String arg;
 
-  Map toJson() => {'title': title, 'command': command, 'arguments': [arg]};
+  Map toJson() => {
+        'title': title,
+        'command': command,
+        'arguments': [arg]
+      };
 }
 
 class CodeLens {
@@ -85,8 +140,8 @@ class CodeLens {
   //can be any type used string for easy serialisation
   String data;
 
-
-  Map toJson() => {'range': range.toJson(), 'data': data, 'command': command.toJson()};
+  Map toJson() =>
+      {'range': range.toJson(), 'data': data, 'command': command.toJson()};
 
   static List toJsonFromList(List<CodeLens> codeLens) {
     var jsCodeLens = [];

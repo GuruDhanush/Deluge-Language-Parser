@@ -37,6 +37,12 @@ jobs:
           SourceFolder: '/usr/lib/dart/bin'
           Contents: 'dartaotruntime' 
         displayName: 'copy aot'
+      - task: CopyFiles@2
+        inputs:
+          TargetFolder: './dist'
+          SourceFolder: './deluge-docs'
+          Contents: 'docs.json'
+        displayName: 'Copy docs'
       - task: PublishBuildArtifacts@1
         inputs:
           PathtoPublish: './dist'

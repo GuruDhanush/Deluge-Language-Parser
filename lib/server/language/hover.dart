@@ -1,9 +1,13 @@
 import 'dart:io';
 
 import 'package:DelugeDartParser/node.dart';
+import 'package:DelugeDartParser/server/docs/docs.dart';
 import 'package:DelugeDartParser/server/document/sync.dart';
 import 'package:DelugeDartParser/server/messaging/message.dart';
+import 'package:DelugeDartParser/server/util.dart';
 import 'package:json_rpc_2/json_rpc_2.dart';
+import 'package:petitparser/petitparser.dart' as prefix0;
+import 'package:tuple/tuple.dart';
 import 'package:yaml/yaml.dart';
 import 'package:path/path.dart' as path;
 
@@ -15,213 +19,157 @@ class HoverProvider {
     _peer.registerMethod('textDocument/hover', onHover);
   }
 
-  static findLine(List lines, Loc loc) {
-    Node resultLine;
-    lines.forEach((line) {
-      var temp = line as Node;
-      if (!temp.startLoc.isBefore(loc)) {
-        return;
-      }
-      resultLine = temp;
-    });
-
-    if (resultLine is ForStatement) {
-      var forLine = resultLine as ForStatement;
-      var block = forLine.body as BlockStatement;
-      resultLine = findLine(block.body, loc);
-    } else if (resultLine is IfStatement) {
-      var ifLine = resultLine as IfStatement;
-      var block = ifLine.consequent as BlockStatement;
-      resultLine = findLine(block.body, loc);
-      if (resultLine == null) {
-        var conseq = ifLine.consequent;
-        while (conseq is IfStatement) {
-          var ifexp = conseq as IfStatement;
-          var block = ifexp.consequent as BlockStatement;
-          resultLine = findLine(block.body, loc);
-          if (resultLine == null) {
-            conseq = ifexp.alternate;
-          }
-        }
-
-        if (conseq is BlockStatement) {
-          resultLine = findLine(conseq.body, loc);
-        }
-      }
+  static int findPosition(Loc loc, Uri uri) {
+    if (Sync.newLineTokens.containsKey(uri)) {
+      if (loc.line == 0) return 0 + loc.column;
+      var line = Sync.newLineTokens[uri][loc.line - 1] as prefix0.Token;
+      return line.stop + loc.column;
     }
-    return resultLine;
+    return -1;
+  }
+
+  static MarkupContent buildMarkUp(Map identifier) {
+    var codeBlock = (code) => '```dg\n${code}\n```\n';
+    var signature = (List params, String returnType, String name) {
+      if (name == null) return '';
+      String paramString = '   ';
+      params.forEach((param) {
+        var m = param as Map;
+        paramString += '${m.values.first} ${m.keys.first}, ';
+      });
+      paramString = paramString.substring(0, paramString.length - 2).trim();
+      var totalString = '$returnType $name($paramString)';
+      return '${codeBlock(totalString)}- - -\n';
+    };
+
+    return MarkupContent(
+        kind: MarkupKind.markdown,
+        value:
+            '${signature(identifier['params'], identifier['returns'], identifier['name'])} ${identifier['shortInfo']}');
   }
 
   static onHover(params) async {
     var docParams = TextDocumentPositionParams.fromJson(params);
 
-    
-
     var result = Sync.openFiles[docParams.textDocument.uri];
     var loc = Loc(
-        line: docParams.position.line + 1,
-        column: docParams.position.character + 2);
+        line: docParams.position.line, column: docParams.position.character);
 
-    
-    var finalResult = treeTraverse(loc, result);
+    var pos = findPosition(loc, docParams.textDocument.uri);
 
+    if (pos == -1) {
+      Message.sendMessageNotif(MessageType.error, 'couldnt find pos');
+      return null;
+    }
 
-//    Message.sendMessageNotif(MessageType.info, finalResult != null ? finalResult.runtimeType.toString() : 'null');
+    var finalResult = treeTraverse(pos, result);
 
-    var markUpContent = (String name) {
+    if (finalResult != null && finalResult is Identifier) {
+      var docs = Docs.searchDoc(finalResult.name.trim());
+      if (docs == null) return null;
 
-      var codeBlock = (code) => '```dg\n${code}\n```\n';
-      var signature = (code) => '${codeBlock(code)}- - -\n';
-
-      return MarkupContent(
-        kind: MarkupKind.markdown,
-        value: 
-        '${signature(name)} }This is an doc line\n Shows info'
-      );
-
-    };
-
-    return finalResult != null ? 
-        Hover(
-          content: markUpContent((finalResult as Identifier).name)
-          //content: MarkupContent(kind: MarkupKind.markdown, value: (finalResult as Identifier).name)
-        ).toJson() : null;
-
-
-    // var hover = Hover(
-    //   content:
-    //       MarkupContent(kind: MarkupKind.markdown, value: '**Hello World**')
-    // );
-    
-    
-    // var resultLine = findLine(result, loc);
-
-    // //return Hover(content: MarkupContent(kind: MarkupKind.plaintext, value: '${loc.line}:${loc.column}'));
-    // if (resultLine is ExpressionStatement) {
-    //   var mainBody = (resultLine.expression as List)[0];
-    //   if (mainBody is AssignmentExpression) {
-    //     return mainBody.onHover(loc);
-    //   }
-    // }
-    // if (resultLine is CommentLine) {
-    //   return null;
-    // }
-
-    //Binary search
-    // int first = 0;
-    // int last = result.length - 1;
-    // while (first <= last) {
-    //   int middle = (first + (last - 1) / 2).toInt();
-
-    //   var line = result[middle] as Node;
-    //   var nextLine = result[middle+1] as Node;
-    //   var locationCurrent = line.startLoc.isBefore(loc);
-    //   var locationNext = nextLine.startLoc.isAfter(loc);
-
-    //   if (locationCurrent && locationNext) {
-    //     resultLine = line;
-    //   } else if (!locationCurrent && locationNext) {
-    //     last = middle -1;
-    //   } else {
-    //     first = middle + 1;
-    //   }
-    // }
-
-    //Message.sendMessageNotif(MessageType.info, resultLine.toString());
-
-    //return hover.toJson();
+      return Hover(
+        content: buildMarkUp(docs as Map),
+      ).toJson();
+    }
   }
 
-  static treeTraverse(Loc loc, Object exp) {
-
-    if(exp is List) {
-      for(var line in exp) {
-        var result = treeTraverse(loc, line);
-        if(result != null) return result;
+  static treeTraverse(int position, Object exp) {
+    if (exp is List) {
+      for (var line in exp) {
+        var result = treeTraverse(position, line);
+        if (result != null) return result;
       }
     } else if (exp is BlockStatement) {
+      if (!exp.isInside(position)) {
+        return null;
+      }
       for (var line in exp.body) {
-        var result = treeTraverse(loc, line);
+        var result = treeTraverse(position, line);
         if (result != null) return result;
       }
     } else if (exp is ForStatement) {
-      if (exp.index.isInside(loc) == 0) {
+      if (exp.index.isInside(position)) {
         return exp.index;
       }
       if (exp.list is Identifier &&
-          (exp.list as Identifier).isInside(loc) == 0) {
-        return  exp.list;
+          (exp.list as Identifier).isInside(position)) {
+        return exp.list;
       }
-      return treeTraverse(loc, exp.body);
+      return treeTraverse(position, exp.body);
     } else if (exp is IfStatement) {
-      return treeTraverse(loc, exp.test) ??
-          treeTraverse(loc, exp.consequent) ??
-          treeTraverse(loc, exp.alternate);
-    } else if(exp is Identifier && exp.isInside(loc) == 0) {
-        return exp; 
-    }
-    else if(exp is LineError) {
-
-    }
-    else if (exp is CommentLine && exp.isInside(loc) == 0) {
+      return treeTraverse(position, exp.test) ??
+          treeTraverse(position, exp.consequent) ??
+          treeTraverse(position, exp.alternate);
+    } else if (exp is Identifier && exp.isInside(position)) {
+      return exp;
+    } else if (exp is LineError) {
+    } else if (exp is CommentLine && exp.isInside(position)) {
       return null;
     } else if (exp is ExpressionStatement) {
-      return treeTraverse(loc, (exp.expression as List)[0]);
+      return treeTraverse(position, (exp.expression as List)[0]);
     } else if (exp is AssignmentExpression) {
-      return treeTraverse(loc, exp.left) ?? treeTraverse(loc, exp.right);
+      return treeTraverse(position, exp.left) ??
+          treeTraverse(position, exp.right);
     } else if (exp is CallExpression) {
       for (var arg in exp.arguments) {
-        var result = treeTraverse(loc, arg);
+        var result = treeTraverse(position, arg);
         if (result != null) return result;
       }
-      return treeTraverse(loc, exp.callee);
+      return treeTraverse(position, exp.callee);
     } else if (exp is MemberExpression) {
-      return treeTraverse(loc, exp.object) ?? treeTraverse(loc, exp.propery);
+      return treeTraverse(position, exp.object) ??
+          treeTraverse(position, exp.propery);
     } else if (exp is BinaryExpression) {
-      return treeTraverse(loc, exp.left) ?? treeTraverse(loc, exp.right);
+      return treeTraverse(position, exp.left) ??
+          treeTraverse(position, exp.right);
     } else if (exp is LogicalExpression) {
-      return treeTraverse(loc, exp.left) ?? treeTraverse(loc, exp.right);
+      return treeTraverse(position, exp.left) ??
+          treeTraverse(position, exp.right);
     } else if (exp is ReturnStatement) {
-      return treeTraverse(loc, exp.argument);
+      return treeTraverse(position, exp.argument);
     } else if (exp is MapExpression) {
       for (var prop in exp.properties) {
-        var result = treeTraverse(loc, prop);
+        var result = treeTraverse(position, prop);
         if (result != null) return result;
       }
     } else if (exp is ObjectProperty) {
-      return treeTraverse(loc, exp.key) ?? treeTraverse(loc, exp.value);
+      return treeTraverse(position, exp.key) ??
+          treeTraverse(position, exp.value);
     } else if (exp is InfoExpression) {
-      return treeTraverse(loc, exp.argument);
+      return treeTraverse(position, exp.argument);
     } else if (exp is IfExpression) {
-      return treeTraverse(loc, exp.test) ??
-          treeTraverse(loc, exp.value) ??
-          treeTraverse(loc, exp.alternate);
-    } else if(exp is IfNullExpression) {
-      return treeTraverse(loc, exp.value) ??
-          treeTraverse(loc, exp.alternate);
-    } else if(exp is UnaryExpression) {
-      return treeTraverse(loc, exp.expression);
-    } else if(exp is ObjectExpression) {
-      for(var prop in exp.properties) {
-        var result = treeTraverse(loc, prop) ;
-        if(result != null) return result;
+      return treeTraverse(position, exp.test) ??
+          treeTraverse(position, exp.value) ??
+          treeTraverse(position, exp.alternate);
+    } else if (exp is IfNullExpression) {
+      return treeTraverse(position, exp.value) ??
+          treeTraverse(position, exp.alternate);
+    } else if (exp is UnaryExpression) {
+      return treeTraverse(position, exp.expression);
+    } else if (exp is ObjectExpression) {
+      for (var prop in exp.properties) {
+        var result = treeTraverse(position, prop);
+        if (result != null) return result;
       }
-    } else if(exp is ListExpression) {
-      for(var prop in exp.elements) {
-        var result = treeTraverse(loc, prop);
-        if(result != null) return result;
+    } else if (exp is ListExpression) {
+      for (var prop in exp.elements) {
+        var result = treeTraverse(position, prop);
+        if (result != null) return result;
       }
-    } else if(exp is InvokeFunction) {
-      for(var prop in exp.args) {
-        var result = treeTraverse(loc, prop);
-        if(result != null) return result;
+    } else if (exp is InvokeFunction) {
+      var result = treeTraverse(position, exp.identifier);
+      if (result != null) return result;
+      for (var prop in exp.args) {
+        var result = treeTraverse(position, prop);
+        if (result != null) return result;
       }
     } else if (exp is BooleanLiteral ||
         exp is BigIntLiteral ||
         exp is DecimalLiteral ||
         exp is StringLiteral) {
       return null;
-    } 
+    }
   }
 }
 
