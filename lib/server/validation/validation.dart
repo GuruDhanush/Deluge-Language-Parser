@@ -11,7 +11,7 @@ class Validation {
     for (var statement in statements) {
       if (statement is LineError) {
         var syncDocs = Sync.newLineTokens[uri];
-        if(syncDocs == null) {
+        if (syncDocs == null) {
           return diagnostics;
         }
 
@@ -19,7 +19,7 @@ class Validation {
             ? findLine(statement.start, statement.end, syncDocs)
             : Loc(line: 0, column: 0);
         //if(startLoc.line == syncDocs.length -1) return diagnostics;
-        if(startLoc == null) continue;
+        if (startLoc == null) continue;
 
         var diagnostic = Diagnostic(
             code: 'Illegal line',
@@ -36,28 +36,30 @@ class Validation {
         if (statement.consequent is BlockStatement) {
           var block = statement.consequent as BlockStatement;
           List<Object> blockstatements = block.body;
-          diagnostics.addAll(Validate(blockstatements.cast<Node>(), uri));
+          diagnostics.addAll(Validate(blockstatements, uri));
         }
         var alternate = statement.alternate;
         if (alternate != null) {
-          while (alternate is! BlockStatement) {
-            var ifstmt = alternate as IfStatement;
+          while (alternate != null && alternate is IfStatement) {
+            IfStatement ifstmt = alternate as IfStatement;
+            if (ifstmt == null || ifstmt.consequent == null) break;
             var consequent = ifstmt.consequent as BlockStatement;
             List<Object> consequentstatements = consequent.body;
-            diagnostics
-                .addAll(Validate(consequentstatements.cast<Node>(), uri));
+            diagnostics.addAll(Validate(consequentstatements, uri));
 
             alternate = ifstmt.alternate;
           }
-          var finalBlock = alternate as BlockStatement;
-          List<Object> finalBlockStatements = finalBlock.body;
-          diagnostics.addAll(Validate(finalBlockStatements.cast<Node>(), uri));
+          if (alternate != null) {
+            var finalBlock = alternate as BlockStatement;
+            List<Object> finalBlockStatements = finalBlock.body;
+            diagnostics.addAll(Validate(finalBlockStatements, uri));
+          }
         }
       } else if (statement is ForStatement) {
         if (statement.body is BlockStatement) {
           var block = statement.body as BlockStatement;
           List<Object> blockstatements = block.body;
-          diagnostics.addAll(Validate(blockstatements.cast<Node>(), uri));
+          diagnostics.addAll(Validate(blockstatements, uri));
         }
       }
     }

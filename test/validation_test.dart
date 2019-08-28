@@ -5,6 +5,7 @@ import 'package:DelugeDartParser/server/document/sync.dart';
 import 'package:DelugeDartParser/server/messaging/diagnostics.dart';
 import 'package:DelugeDartParser/server/validation/validation.dart';
 import 'package:petitparser/petitparser.dart' as prefix0;
+import 'package:petitparser/petitparser.dart';
 import 'package:test/test.dart';
 
 import 'example/sample1.dart';
@@ -82,4 +83,16 @@ void main() {
     expect(result.value.length, 2);
     
   },skip: 'validation api change');
+
+  test('check diagnostics 3', () {
+    var result = ParserDG.parse(SAMPLE4);
+    List<Object> statements = result.value;
+    Uri uri = Uri.parse('untitled:1');
+    Sync.newLineTokens[uri] = ((char('\n') | char('\r') & char('\n').optional()) ).token().matchesSkipping(SAMPLE4);
+    var validations = Validation.Validate(statements.cast<Node>(), uri);
+    expect(validations, isEmpty);
+  });
+
+
+
 }

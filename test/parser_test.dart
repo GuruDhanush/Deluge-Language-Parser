@@ -613,6 +613,19 @@ void main() {
       assert(result.isSuccess);
     });
 
+     test('if pending', () {
+      var parser = DelugeParser();
+      var input = """ 
+      if(true) {
+        id = 1;
+      } else if(true) {}
+      """;
+      var result = parser.parse(input);
+      assert(result.isSuccess);
+    });
+
+
+
   });
 
   group('if null expression', () {

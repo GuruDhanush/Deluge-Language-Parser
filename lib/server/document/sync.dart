@@ -29,12 +29,16 @@ class Sync {
     //String fullText = data + extraText;
     var result = DelugeParser().parse(data);
     if(result.isSuccess) {
+      Message.sendLogMessage(MessageType.info, 'parsed !');
       openFiles[uri] = result.value;
       var validations = Validation.Validate(result.value, uri);
+      Message.sendLogMessage(MessageType.info, 'validated successfully');
       Diagnostics.publishDiagnostics(uri, validations);
       newLineTokens[uri] = Token.newlineParser().token().matchesSkipping(data);
+      Message.sendLogMessage(MessageType.info, 'newline tokens parsed');
     }
     else {
+      Message.sendLogMessage(MessageType.error, 'failed to parse!');
       openFiles.remove(uri);
     }
 
