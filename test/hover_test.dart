@@ -169,6 +169,24 @@ void main() {
     assert(result.isSuccess);
   });
 
+
+  test('hover ignorecase', () {
+    var input = """
+    if(targetName.equalsIgnoreCase("portals"))
+    {
+
+    }""";
+    Uri uri = Uri.parse('title:1');
+    //Sync.newLineTokens[uri] = ((char('\n') | char('\r') & char('\n').optional()) ).token().matchesSkipping(input);
+    var result = parser.parse(input);
+    Sync.openFiles[uri] = result.value;
+    var pos = ((((result.value[0] as IfStatement).test as CallExpression).callee as MemberExpression).propery as Identifier).start + 3;
+    var hover = HoverProvider.treeTraverse(pos, result.value);
+    assert(result.isSuccess);
+
+    
+  });
+
   test('crash linux', () {
     var input = """
     a;

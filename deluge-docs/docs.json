@@ -129,7 +129,9 @@
     "contains": {
       "name": "contains",
       "params": [
-        "string"
+        {
+          "string": "string"
+        }
       ],
       "returns": "boolean",
       "shortInfo": "Returns true if the passed string is substring.",
@@ -139,7 +141,9 @@
     "endsWith": {
       "name": "endsWith",
       "params": [
-        "string"
+        {
+          "string": "string"
+        }
       ],
       "returns": "boolean",
       "shortInfo": "Returns true if the string ends with the given string",
@@ -149,7 +153,9 @@
     "startsWith": {
       "name": "startsWith",
       "params": [
-        "string"
+        {
+          "string": "string"
+        }
       ],
       "returns": "string",
       "shortInfo": "Returns true if the string starts with the given string",
@@ -158,7 +164,11 @@
     },
     "remove": {
       "name": "remove",
-      "params": "string",
+      "params": [
+        {
+          "string": "string"
+        }
+      ],
       "returns": "string",
       "shortInfo": "Removes the given string from the string.",
       "info": null,
@@ -166,7 +176,11 @@
     },
     "removeFirstOccurence": {
       "name": "removeFirstOccurence",
-      "params": "string",
+      "params": [
+        {
+          "string": "string"
+        }
+      ],
       "returns": "string",
       "shortInfo": "Removes the first occurence of the given string from the string.",
       "info": null,
@@ -175,7 +189,9 @@
     "removeLastOccurence": {
       "name": "removeLastOccurence",
       "params": [
-        "string"
+        {
+          "string": "string"
+        }
       ],
       "returns": "string",
       "shortInfo": "Removes the last occurence of the given string from the string.",
@@ -185,7 +201,9 @@
     "getSuffix": {
       "name": "getSuffix",
       "params": [
-        "string"
+        {
+          "string": "string"
+        }
       ],
       "returns": "string",
       "shortInfo": "Returns the remaining string after the given string.",
@@ -194,9 +212,9 @@
     },
     "getPrefix": {
       "name": "getPrefix",
-      "params": [
-        "string"
-      ],
+      "params": {
+        "-string": "string"
+      },
       "returns": "string",
       "shortInfo": "Returns the remaining string before the given string.",
       "info": null,
@@ -261,7 +279,9 @@
     "getOccurence": {
       "name": "getOccurence",
       "params": [
-        "string"
+        {
+          "string": "string"
+        }
       ],
       "returns": "bigint",
       "shortInfo": "Returns the count of given string present as substring in the string",
@@ -271,7 +291,9 @@
     "indexOf": {
       "name": "indexOf",
       "params": [
-        "string"
+        {
+          "string": "string"
+        }
       ],
       "returns": "bigint",
       "shortInfo": "Returns the index of first occurence of given string as substring in the string",
@@ -281,7 +303,9 @@
     "lastIndexOf": {
       "name": "lastIndexOf",
       "params": [
-        "string"
+        {
+          "string": "string"
+        }
       ],
       "returns": "bigint",
       "shortInfo": "Returns the index of last occurence of given string as substring in the string",
@@ -291,8 +315,12 @@
     "substring": {
       "name": "substring",
       "params": [
-        "bigint",
-        "bigint"
+        {
+          "startIndex": "bigint"
+        },
+        {
+          "endIndex": "bigint"
+        }
       ],
       "returns": "string",
       "shortInfo": "Returns the string from specified start index to end index",
@@ -302,7 +330,9 @@
     "equalsIgnoreCase": {
       "name": "equalsIgnoreCase",
       "params": [
-        "string"
+        {
+          "string": "string"
+        }
       ],
       "returns": "boolean",
       "shortInfo": "Returns true if the given string is equal to the string",
@@ -312,7 +342,9 @@
     "matches": {
       "name": "matches",
       "params": [
-        "string"
+        {
+          "regex": "string"
+        }
       ],
       "returns": "boolean",
       "shortInfo": "Returns true if the passed regular expression matches the string",
@@ -322,8 +354,12 @@
     "replaceAll": {
       "name": "replaceAll",
       "params": [
-        "string",
-        "string"
+        {
+          "searchString": "string"
+        },
+        {
+          "replaceString": "string"
+        }
       ],
       "returns": "string",
       "shortInfo": "Replaces all the occurences of the first search string to that of the second replacement string",
@@ -333,8 +369,12 @@
     "replaceFirst": {
       "name": "replaceFirst",
       "params": [
-        "string",
-        "string"
+        {
+          "searchString": "string"
+        },
+        {
+          "replaceString": "string"
+        }
       ],
       "returns": "string",
       "shortInfo": "Replaces the first occurences of the first search string to that of the second replacement string",
@@ -432,8 +472,12 @@
     "leftPad": {
       "name": "leftPad",
       "params": [
-        "string",
-        "bigint"
+        {
+          "string": "string"
+        },
+        {
+          "padding": "bigint"
+        }
       ],
       "returns": "string",
       "shortInfo": "Returns the string with specified whitespace chars padded to its left.",
@@ -443,8 +487,12 @@
     "rightPad": {
       "name": "rightPad",
       "params": [
-        "string",
-        "bigint"
+        {
+          "string": "string"
+        },
+        {
+          "padding": "bigint"
+        }
       ],
       "returns": "string",
       "shortInfo": "Returns the string with specified whitespace chars padded to its right.",
@@ -841,20 +889,18 @@
       "examples": null
     },
     "trim": {
-      "name": "trim",
-      "params": [],
-      "returns": "String",
-      "shortInfo": "Returns the string after trimming whitespaces on both ends",
-      "info": null,
-      "examples": null
+      "name\"": "trim",
+      "params\"": [],
+      "returns\"": "String",
+      "shortInfo\"": "Returns the string after trimming whitespaces on both ends",
+      "info\"": null,
+      "examples\"": null
     },
     "sendemail": {
       "shortInfo": "Sends an email"
-
     },
-    "sendsms": {
+    "sendsms\"": {
       "shortInfo": "Sends an sms"
-
     },
     "pushNotification": {
       "shortInfo": "Sends an push notification"
@@ -871,6 +917,5 @@
     "Collection": {
       "shortInfo": "Can store both list elememts or map, only one at once"
     }
-
   }
 }

@@ -57,6 +57,8 @@ class HoverProvider {
 
     var pos = findPosition(loc, docParams.textDocument.uri);
 
+    Message.sendLogMessage(MessageType.info, 'Position found $pos');
+
     if (pos == -1) {
       Message.sendMessageNotif(MessageType.error, 'couldnt find pos');
       return null;
@@ -65,8 +67,11 @@ class HoverProvider {
     var finalResult = treeTraverse(pos, result);
 
     if (finalResult != null && finalResult is Identifier) {
+      Message.sendLogMessage(MessageType.info, 'Found an identifier');
       var docs = Docs.searchDoc(finalResult.name.trim());
       if (docs == null) return null;
+      Message.sendLogMessage(MessageType.info, 'docs found');
+
 
       return Hover(
         content: buildMarkUp(docs as Map),

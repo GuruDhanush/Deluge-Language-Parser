@@ -30,6 +30,7 @@ Incremental compilation is yet to be implemented. In the mean time some parse re
 | - | - |
 | initialize | ✅ |
 | initialized | ✅ |
+| cancelRequest | ✅ |
 | window/showMessage | ✅ | 
 | window/showMessageRequest | ✅ |
 | window/logMessage | ✅ | 

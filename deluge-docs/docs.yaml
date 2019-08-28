@@ -80,7 +80,7 @@ functions:
   contains:
     name: contains
     params: 
-        - string
+        - string:  string
     returns: boolean
     shortInfo: Returns true if the passed string is substring.
     info: | 
@@ -98,7 +98,7 @@ functions:
   endsWith: 
         name: endsWith
         params:
-            - string
+            - string:  string
         returns: boolean
         shortInfo: Returns true if the string ends with the given string
         info: 
@@ -106,7 +106,7 @@ functions:
   startsWith:
     name: startsWith
     params:
-        - string
+        - string: string
     returns: string
     shortInfo: Returns true if the string starts with the given string
     info:
@@ -114,7 +114,7 @@ functions:
   remove:
         name: remove
         params:
-          string
+          - string: string
         returns: string
         shortInfo: Removes the given string from the string. 
         info:
@@ -122,7 +122,7 @@ functions:
   removeFirstOccurence:
         name: removeFirstOccurence
         params:
-          string
+          - string: string
         returns: string
         shortInfo: Removes the first occurence of the given string from the string. 
         info:
@@ -130,7 +130,7 @@ functions:
   removeLastOccurence:
         name: removeLastOccurence
         params:
-            - string
+            - string: string
         returns: string
         shortInfo: Removes the last occurence of the given string from the string. 
         info:
@@ -138,7 +138,7 @@ functions:
   getSuffix:
         name: getSuffix
         params:
-            - string
+            - string: string
         returns: string
         shortInfo: Returns the remaining string after the given string. 
         info:
@@ -146,7 +146,7 @@ functions:
   getPrefix:
         name: getPrefix
         params:
-            - string
+            -string: string
         returns: string
         shortInfo: Returns the remaining string before the given string. 
         info:
@@ -203,7 +203,7 @@ functions:
   getOccurence:
         name: getOccurence
         params: 
-            - string
+            - string: string
         returns: bigint
         shortInfo: Returns the count of given string present as substring in the string 
         info:
@@ -211,7 +211,7 @@ functions:
   indexOf:
         name: indexOf
         params: 
-            - string
+            - string: string
         returns: bigint
         shortInfo: Returns the index of first occurence of given string as substring in the string 
         info:
@@ -219,7 +219,7 @@ functions:
   lastIndexOf:
         name: lastIndexOf
         params: 
-            - string
+            - string: string
         returns: bigint
         shortInfo: Returns the index of last occurence of given string as substring in the string 
         info:
@@ -227,8 +227,8 @@ functions:
   substring:
         name: substring
         params: 
-            - bigint
-            - bigint
+            - startIndex:  bigint
+            - endIndex: bigint
         returns: string
         shortInfo: Returns the string from specified start index to end index 
         info:
@@ -236,7 +236,7 @@ functions:
   equalsIgnoreCase:
         name: equalsIgnoreCase
         params: 
-            - string
+            - string: string
         returns: boolean
         shortInfo: Returns true if the given string is equal to the string 
         info:
@@ -251,7 +251,7 @@ functions:
   matches:
         name: matches
         params: 
-            - string
+            - regex: string
         returns: boolean
         shortInfo: Returns true if the passed regular expression matches the string 
         info:
@@ -259,8 +259,8 @@ functions:
   replaceAll:
         name: replaceAll
         params: 
-            - string
-            - string
+            - searchString: string
+            - replaceString: string
         returns: string
         shortInfo: Replaces all the occurences of the first search string to that of the second replacement string 
         info:
@@ -268,8 +268,8 @@ functions:
   replaceFirst:
         name: replaceFirst
         params: 
-            - string
-            - string
+            - searchString: string
+            - replaceString: string
         returns: string
         shortInfo: Replaces the first occurences of the first search string to that of the second replacement string 
         info:
@@ -349,8 +349,8 @@ functions:
   leftPad:
         name: leftPad
         params: 
-            - string
-            - bigint
+            - string: string
+            - padding: bigint
         returns: string
         shortInfo: Returns the string with specified whitespace chars padded to its left. 
         info:
@@ -358,8 +358,8 @@ functions:
   rightPad:
         name: rightPad
         params: 
-            - string
-            - bigint
+            - string: string
+            - padding: bigint
         returns: string
         shortInfo: Returns the string with specified whitespace chars padded to its right.
         info:
@@ -699,3 +699,32 @@ functions:
         shortInfo: Returns value as string to the specified key
         info:
         examples:
+  trim: 
+      name": "trim"
+      params": []
+      returns": "String"
+      shortInfo": "Returns the string after trimming whitespaces on both ends"
+      info": null
+      examples": null
+
+  sendemail: 
+      shortInfo: "Sends an email"
+      
+  sendsms": 
+      shortInfo: Sends an sms
+
+  pushNotification: 
+      shortInfo: Sends an push notification
+
+  invokeurl: 
+      shortInfo: Used to invoke an connection
+
+  Map: 
+      shortInfo: Hold key-value pairs
+
+  List: 
+      shortInfo: Holds the elements in an orderly fashion
+
+  Collection: 
+      shortInfo: Can store both list elememts or map, only one at once
+    

@@ -55,6 +55,11 @@ main(List<String> arguments) {
       };
     })
 
+    ..registerMethod("\$/cancelRequest", (param){
+      //at the moment, when on any error, restart the server!!
+      exit(1);
+    })
+
     ..registerMethod('shutdown', (param) {
       shutdown = true;
       return null;

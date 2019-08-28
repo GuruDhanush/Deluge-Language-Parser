@@ -97,14 +97,13 @@ jobs:
       - task: CopyFiles@1 
         inputs:
           TargetFolder: './dist'
-          SourceFolder: '/usr/local/Cellar/dart/2.4.1/bin/'
+          SourceFolder: '/usr/local/Cellar/dart/2.4.1/libexec/bin/'
           Contents: 'dartaotruntime' 
         displayName: 'copy aot'
       - task: PublishBuildArtifacts@1
         inputs:
           PathtoPublish: './dist'
           ArtifactName: 'Macos'
-
 
 
  
