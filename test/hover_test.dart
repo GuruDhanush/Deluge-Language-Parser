@@ -8,6 +8,7 @@ import 'package:DelugeDartParser/server/document/sync.dart';
 import 'package:DelugeDartParser/server/language/codelens.dart';
 import 'package:DelugeDartParser/server/language/hover.dart';
 import 'package:DelugeDartParser/server/util.dart';
+import 'package:DelugeDartParser/server/validation/validation.dart';
 import 'package:petitparser/petitparser.dart';
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
@@ -165,6 +166,19 @@ void main() {
     a""";
     var extra = """\n//""";
     var result = parser.parse(input + extra);
+    assert(result.isSuccess);
+  });
+
+  test('crash linux', () {
+    var input = """
+    a;
+    a -1\na.get();""";  
+
+    Uri uri = Uri.parse('title:1');
+    Sync.newLineTokens[uri] = ((char('\n') | char('\r') & char('\n').optional()) ).token().matchesSkipping(input);
+    var result = parser.parse(input);
+    Sync.openFiles[uri] = result.value;
+    var l = Validation.Validate(result.value, uri);
     assert(result.isSuccess);
   });
 

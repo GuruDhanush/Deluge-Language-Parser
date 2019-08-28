@@ -19,7 +19,7 @@ class Validation {
             ? findLine(statement.start, statement.end, syncDocs)
             : Loc(line: 0, column: 0);
         //if(startLoc.line == syncDocs.length -1) return diagnostics;
-        if(startLoc == null) return diagnostics;
+        if(startLoc == null) continue;
 
         var diagnostic = Diagnostic(
             code: 'Illegal line',
@@ -31,7 +31,7 @@ class Validation {
                 end: Position(line: startLoc.line, character: statement.end)));
 
         diagnostics.add(diagnostic);
-        return diagnostics;
+        //return diagnostics;
       } else if (statement is IfStatement) {
         if (statement.consequent is BlockStatement) {
           var block = statement.consequent as BlockStatement;
