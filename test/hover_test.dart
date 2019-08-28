@@ -157,4 +157,15 @@ void main() {
   });
 
 
+  test('last line error', (){
+
+
+    var input =  """
+    a = 1;
+    a""";
+    var extra = """\n//""";
+    var result = parser.parse(input + extra);
+    assert(result.isSuccess);
+  });
+
 }

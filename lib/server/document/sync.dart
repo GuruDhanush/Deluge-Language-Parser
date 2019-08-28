@@ -25,7 +25,7 @@ class Sync {
   //TODO: Make the debounce robust
   static parseFile(Uri uri, String data) {
     
-    String extraText = """\n //""";
+    String extraText = """\n a.get();""";
     String fullText = data + extraText;
     var result = DelugeParser().parse(fullText);
     if(result.isSuccess) {
