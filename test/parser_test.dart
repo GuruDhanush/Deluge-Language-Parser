@@ -884,7 +884,7 @@ void main() {
     test('single error', () {
       var result = parser.parse('id = d');
 
-      assert(result.isFailure);
+      assert(result.isSuccess);
     });
   });
 
