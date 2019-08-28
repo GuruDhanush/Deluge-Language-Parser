@@ -172,13 +172,16 @@ void main() {
   test('crash linux', () {
     var input = """
     a;
-    a -1\na.get();""";  
+    a -1""";  
+
 
     Uri uri = Uri.parse('title:1');
     Sync.newLineTokens[uri] = ((char('\n') | char('\r') & char('\n').optional()) ).token().matchesSkipping(input);
     var result = parser.parse(input);
     Sync.openFiles[uri] = result.value;
     var l = Validation.Validate(result.value, uri);
+    CodeLensProvider.treeTraversalCodeLens(result.value, uri);
+    var lens = CodeLensProvider.codeLens;
     assert(result.isSuccess);
   });
 

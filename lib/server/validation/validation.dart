@@ -73,7 +73,7 @@ class Validation {
             line: i, column: startPos - (i == 0 ? 0 : tokens[i - 1].stop));
       }
     }
-
-    return null;
+    //for last line
+    return Loc(line: tokens.length, column: 0);
   }
 }

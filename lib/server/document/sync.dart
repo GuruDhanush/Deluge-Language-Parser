@@ -25,14 +25,14 @@ class Sync {
   //TODO: Make the debounce robust
   static parseFile(Uri uri, String data) {
     
-    String extraText = """\n a.get();""";
-    String fullText = data + extraText;
-    var result = DelugeParser().parse(fullText);
+    //String extraText = """\n a.get();""";
+    //String fullText = data + extraText;
+    var result = DelugeParser().parse(data);
     if(result.isSuccess) {
       openFiles[uri] = result.value;
       var validations = Validation.Validate(result.value, uri);
       Diagnostics.publishDiagnostics(uri, validations);
-      newLineTokens[uri] = Token.newlineParser().token().matchesSkipping(fullText);
+      newLineTokens[uri] = Token.newlineParser().token().matchesSkipping(data);
     }
     else {
       openFiles.remove(uri);

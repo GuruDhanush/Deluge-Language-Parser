@@ -111,7 +111,7 @@ class DgGrammarDef extends GrammarDefinition {
       (whitespace() | ref(NEWLINE)).plus().flatten().trim();
 
   //TODO: fix the case where it fails when the error is in last line
-  Parser lineError() => noneOf('\n\r}').plus() & anyIn('\n\r');
+  Parser lineError() => noneOf('\n\r}').plus() & anyIn('\n\r').optional();
 
   Parser statements() => ref(statement).trim().star();
 
