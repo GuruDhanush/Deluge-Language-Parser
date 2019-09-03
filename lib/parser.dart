@@ -74,7 +74,7 @@ class ParserDefinition extends LexerDefinition {
       .token()
       .map((id) => id.value[1]..extra.putIfAbsent('parentise', () => true));
 
-  Parser<CallExpression> callExpression() => super.callExpression().token().map((id) {
+  Parser callExpression() => super.callExpression().token().map((id) {
         var args = id.value[1][1];
         var params = [];
         for (var arg in args) {
