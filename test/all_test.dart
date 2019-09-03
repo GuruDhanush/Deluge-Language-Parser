@@ -11,7 +11,7 @@ void main() {
 
   group('lexer', lexer.main);
   group('parser', parser.main);
-  group('hover', hover.main);
-  group('validation', validation.main);
+  //group('hover', hover.main);
+  //group('validation', validation.main);
 
 }
