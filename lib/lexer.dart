@@ -1,14 +1,17 @@
 import 'package:DelugeDartParser/node.dart';
 import 'package:petitparser/petitparser.dart';
 
-class DgGrammar extends GrammarParser {
-  DgGrammar() : super(DgGrammarDef());
+class Lexer extends GrammarParser {
+  Lexer() : super(LexerDefinition());
 }
 
-class DgGrammarDef extends GrammarDefinition {
+class LexerDefinition extends GrammarDefinition {
+
+  const LexerDefinition() : super();
+
   Parser token(Object input) {
     if (input is Parser) {
-      return input.token().trim(ref(DISCARDED)); //(ref(WHITESPACE));
+      return input.token().trim(ref(DISCARDED)); // (ref(discardedSpace().plus)); // .trim(ref(DISCARDED)); //(ref(WHITESPACE));
     } else if (input is String) {
       return token(input.length == 1 ? char(input) : string(input));
     } else if (input is Function) {
@@ -16,6 +19,8 @@ class DgGrammarDef extends GrammarDefinition {
     }
     throw ArgumentError.value(input, 'invalid token parser');
   }
+
+  Parser discardedSpace() => char(' ') | char('\t');
 
   Parser start() => ref(startParser).end();
 
@@ -31,7 +36,7 @@ class DgGrammarDef extends GrammarDefinition {
               includeSeparators: false, optionalSeparatorAtEnd: false) &
       ref(token, ')');
 
-  Parser singleParam() =>
+  Parser singleParam() => 
       ref(decimalLiteral) |
       ref(bigintLiteral) |
       ref(token, NULL) |
@@ -98,7 +103,8 @@ class DgGrammarDef extends GrammarDefinition {
       char(';').token());
 
   Parser statement() =>
-      ref(whitespace).plus().trim() |
+      //ref(whitespace).plus().trim() |
+      ref(newLine) |
       ref(singleLineComment) |
       ref(multiLineComment) |
       ref(returnStatement) |
@@ -108,7 +114,7 @@ class DgGrammarDef extends GrammarDefinition {
       ref(lineError);
 
   Parser whitespaceLine() =>
-      (whitespace() | ref(NEWLINE)).plus().flatten().trim();
+      (whitespace() | ref(newLine)).plus().flatten().trim();
 
   //TODO: fix the case where it fails when the error is in last line
   Parser lineError() => noneOf('\n\r}').plus() & anyIn('\n\r').optional();
@@ -262,6 +268,7 @@ class DgGrammarDef extends GrammarDefinition {
 
   Parser singleLineComment() => ref(token, SINGLELINE_COMMENT);
   Parser multiLineComment() => ref(token, MULTILINE_COMMENT);
+  Parser newLine() => ref(token, NEWLINE);
 
   //
   // Keyword definitions
@@ -299,7 +306,7 @@ class DgGrammarDef extends GrammarDefinition {
   /// says other wise. From https://www.zoho.com/creator/newhelp/script/deluge-datatypes.html,
   /// "The specified input must be enclosed in double quotes". In the mean time all the
   /// datetime type is treated as string and no validations are performed.
-  List<String> months = [
+  final List<String> months = const [
     'jan',
     'feb',
     'mar',
@@ -392,6 +399,6 @@ class DgGrammarDef extends GrammarDefinition {
 
   //TODO: escape chars for ' also;
   //List escapeChars = ['"', '\\', '/', 'b', 'f', 'n', 'r', 't'];
-  List escapeCharsSingleQuote = ["'", '\\', '/', 'b', 'f', 'n', 'r', 't'];
-  List escapeCharsDoubleQuote = ['"', '\\', '/', 'b', 'f', 'n', 'r', 't'];
+  final List escapeCharsSingleQuote = const ["'", '\\', '/', 'b', 'f', 'n', 'r', 't'];
+  final List escapeCharsDoubleQuote = const ['"', '\\', '/', 'b', 'f', 'n', 'r', 't'];
 }

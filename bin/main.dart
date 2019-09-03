@@ -18,8 +18,6 @@ import 'package:petitparser/petitparser.dart';
 import 'package:yaml/yaml.dart';
 import 'package:path/path.dart' as path;
 
-import 'benchmark.dart';
-
 json_rpc.Peer peer;
 
 
@@ -70,10 +68,5 @@ main(List<String> arguments) {
     });
   
   peer.listen();
-}
-
-
-maind(List<String> arguments) {
-  ParserBenchmark.main();
 }
 

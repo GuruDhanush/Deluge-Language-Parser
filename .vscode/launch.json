@@ -9,6 +9,12 @@
             "program": "bin/main.dart",
             "request": "launch",
             "type": "dart"
+        },
+        {
+            "name": "Benchmark",
+            "program": "bin/benchmark.dart",
+            "request": "launch",
+            "type": "dart"
         }
     ]
 }

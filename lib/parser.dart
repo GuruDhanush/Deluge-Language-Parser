@@ -2,29 +2,32 @@ import 'package:DelugeDartParser/lexer.dart';
 import 'package:DelugeDartParser/node.dart';
 import 'package:petitparser/petitparser.dart';
 
-DelugeParser ParserDG = DelugeParser();
+final DelugeParser DGParser = DelugeParser();
 
 class DelugeParser extends GrammarParser {
-  DelugeParser() : super(DelugeParserDefinition());
+  DelugeParser() : super(ParserDefinition());
 }
 
-class DelugeParserDefinition extends DgGrammarDef {
-  Parser identifier() => super.identifier().map(
+class ParserDefinition extends LexerDefinition {
+
+  const ParserDefinition() : super();
+
+  Parser<Identifier> identifier() => super.identifier().map(
       (id) => Identifier.fromId(id: id, name: id.value, rawValue: id.input));
 
-  Parser bigintLiteral() => super.bigintLiteral().map(
+  Parser<BigIntLiteral> bigintLiteral() => super.bigintLiteral().map(
       (id) => BigIntLiteral.fromId(value: id.value, raw: id.input, id: id));
 
-  Parser decimalLiteral() => super.decimalLiteral().map(
+  Parser<DecimalLiteral> decimalLiteral() => super.decimalLiteral().map(
       (id) => DecimalLiteral.fromId(value: id.value, raw: id.input, id: id));
 
-  Parser stringLiteral() => super.stringLiteral().map(
+  Parser<StringLiteral> stringLiteral() => super.stringLiteral().map(
       (id) => StringLiteral.fromId(value: id.value, raw: id.input, id: id));
 
-  Parser booleanLiteral() => super.booleanLiteral().map((id) =>
+  Parser<BooleanLiteral> booleanLiteral() => super.booleanLiteral().map((id) =>
       BooleanLiteral.fromId(value: id.value == 'true', raw: id.input, id: id));
 
-  Parser binaryExpression() => super.binaryExpression().token().map((id) {
+  Parser<Node> binaryExpression() => super.binaryExpression().token().map((id) {
         var _tmpList = id.value[1];
 
         //case where we get an binary expression and next tokens tend to be zero.
@@ -45,7 +48,7 @@ class DelugeParserDefinition extends DgGrammarDef {
         return bin;
       });
 
-  Parser logicalExpression() => super.logicalExpression().token().map((id) {
+  Parser<Node> logicalExpression() => super.logicalExpression().token().map((id) {
         var _tmpList = id.value[1];
 
         //case where we get an logical expression and next tokens tend to be zero.
@@ -71,7 +74,7 @@ class DelugeParserDefinition extends DgGrammarDef {
       .token()
       .map((id) => id.value[1]..extra.putIfAbsent('parentise', () => true));
 
-  Parser callExpression() => super.callExpression().token().map((id) {
+  Parser<CallExpression> callExpression() => super.callExpression().token().map((id) {
         var args = id.value[1][1];
         var params = [];
         for (var arg in args) {
@@ -104,52 +107,52 @@ class DelugeParserDefinition extends DgGrammarDef {
         return exp;
       });
 
-  Parser expressionStatement() => super.expressionStatement().token().map((id) {
+  Parser<ExpressionStatement> expressionStatement() => super.expressionStatement().token().map((id) {
         return ExpressionStatement.fromId(expression: id.value, id: id);
       });
   
-  Parser singleLineComment() => super.singleLineComment().map((id) => CommentLine.fromId(value: id.value[2], id: id));
-  Parser multiLineComment() => super.multiLineComment().map((id) => CommentLine.fromId(value: id.value[2], id: id));
+  Parser<CommentLine> singleLineComment() => super.singleLineComment().map((id) => CommentLine.fromId(value: id.value[2], id: id));
+  Parser<CommentLine> multiLineComment() => super.multiLineComment().map((id) => CommentLine.fromId(value: id.value[2], id: id));
 
 
-  Parser returnStatement() => super
+  Parser<ReturnStatement> returnStatement() => super
       .returnStatement()
       .token()
       .map((id) => ReturnStatement.fromId(argument: id.value[1], id: id));
 
-  Parser infoExpression() => super
+  Parser<InfoExpression> infoExpression() => super
       .infoExpression()
       .token()
       .map((id) => InfoExpression.fromId(argument: id.value[1], id: id));
 
-  Parser assignmentExpression() => super.assignmentExpression().token().map(
+  Parser<AssignmentExpression> assignmentExpression() => super.assignmentExpression().token().map(
       (id) => AssignmentExpression.fromId(
           left: id.value[0],
           ooperator: id.value[1].value,
           right: id.value[2],
           id: id));
 
-  Parser unaryExpression() =>
+  Parser<UnaryExpression> unaryExpression() =>
       super.unaryExpression().token().map((id) => UnaryExpression.fromId(
           expression: id.value[1], ooperator: id.value[0].value, id: id));
 
-  Parser ifExpression() =>
+  Parser<IfExpression> ifExpression() =>
       super.ifExpression().token().map((id) => IfExpression.fromId(
           test: id.value[2],
           value: id.value[4],
           alternate: id.value[6],
           id: id,));
 
-  Parser ifNullExpression() =>
+  Parser<IfNullExpression> ifNullExpression() =>
       super.ifNullExpression().token().map((id) => IfNullExpression.fromId(
           value: id.value[2], alternate: id.value[4], id: id));
 
-  Parser blockStatement() => super
+  Parser<BlockStatement> blockStatement() => super
       .blockStatement()
       .token()
       .map((id) => BlockStatement.fromIdWithEnd(body: id.value[1], id: id));
 
-  Parser ifStatement() => super.ifStatement().token().map((id) {
+  Parser<IfStatement> ifStatement() => super.ifStatement().token().map((id) {
         var consequent = id.value[6] != null ? id.value[6][1] : null;
         var turns = id.value[5];
         for (var i = 0; i < turns.length; i++) {
@@ -167,7 +170,7 @@ class DelugeParserDefinition extends DgGrammarDef {
             id: id);
       });
 
-  Parser forStatement() =>
+  Parser<ForStatement> forStatement() =>
       super.forStatement().token().map((id) => ForStatement.fromId(
           isIndex: id.value[2] != null,
           index: id.value[3],
@@ -175,18 +178,18 @@ class DelugeParserDefinition extends DgGrammarDef {
           body: id.value[6],
           id: id));
 
-  Parser objectProperty() => super.objectProperty().token().map((id) =>
+  Parser<ObjectProperty> objectProperty() => super.objectProperty().token().map((id) =>
       ObjectProperty.fromId(key: id.value[0], value: id.value[2], id: id));
-  Parser objectExpression() => super
+  Parser<ObjectExpression> objectExpression() => super
       .objectExpression()
       .token()
       .map((id) => ObjectExpression.fromId(properties: id.value[1], id: id));
 
-  Parser listExpression() => super
+  Parser<ListExpression> listExpression() => super
       .listExpression()
       .token()
       .map((id) => ListExpression.fromId(elements: id.value[1], id: id));
-  Parser invokeFunction() => super.invokeFunction().token().map((id) {
+  Parser<InvokeFunction> invokeFunction() => super.invokeFunction().token().map((id) {
         var args = id.value[2];
         List<ObjectProperty> arguments = [];
         for (var arg in args) {
@@ -197,7 +200,9 @@ class DelugeParserDefinition extends DgGrammarDef {
             identifier: id.value[0], args: arguments, id: id);
       });
 
-  Parser lineError() => super
+  Parser newLine() => super.newLine().token(); 
+
+  Parser<LineError> lineError() => super
       .lineError()
       .token()
       .map((id) => 

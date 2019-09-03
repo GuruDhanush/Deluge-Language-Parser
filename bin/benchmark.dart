@@ -9,6 +9,11 @@ import 'package:path/path.dart' as path;
 import 'package:petitparser/petitparser.dart';
 
 
+main(List<String> arguments) {
+  ParserBenchmark.main();
+}
+
+
 class ParserBenchmark extends BenchmarkBase {
   ParserBenchmark() : super('parser');
 

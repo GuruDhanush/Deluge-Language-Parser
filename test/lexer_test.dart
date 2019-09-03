@@ -6,10 +6,10 @@ import 'package:DelugeDartParser/lexer.dart';
 import './example/sample1.dart' as sample;
 
 void main() {
-  DgGrammarDef dg;
+  LexerDefinition dg;
 
   setUp(() {
-    dg = DgGrammarDef();
+    dg = LexerDefinition();
   });
 
   group("single line comment", () {
@@ -828,7 +828,7 @@ void main() {
   test('tmp test', () {
     
     //var parser = DgGrammarDef().build(start: DgGrammarDef().ifStatement);
-    var parser = DgGrammar();
+    var parser = Lexer();
     var input = sample.SAMPLE1; 
     var watch = Stopwatch() ..start();
     var result = parser.parse(input);
@@ -840,8 +840,12 @@ void main() {
   test('test-bed', () {
     //var input = 'response.put("text",createdBy + " \nLast Modified on " + lastModifiedDate + " \n");';
     //var input = 'createdBy + " \nLast Modified on " + lastModifiedDate + " \n"';
-    var input = '!1';
-    var parser = dg.build(start: dg.singleParam);
+    var input = """
+    a = 1;
+    b = 2;
+    c = 3;
+    """;
+    var parser = Lexer();
     var result = parser.parse(input);
     assert(result.isSuccess);
 

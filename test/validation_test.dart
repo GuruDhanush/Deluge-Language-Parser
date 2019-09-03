@@ -11,7 +11,7 @@ import 'package:test/test.dart';
 import 'example/sample1.dart';
 
 void main() {
-  DelugeParser parser;
+  Parser parser;
   setUp(() {
     parser = DelugeParser();
   });
@@ -45,7 +45,7 @@ void main() {
   });
 
   test('check diagnostics 2', () {
-    var result = ParserDG.parse(SAMPLE3);
+    var result = DGParser.parse(SAMPLE3);
     List<Object> statements = result.value;
     var validations = Validation.Validate(statements.cast<Node>(), null);
     var params = PublishDiagnosticsParams(
@@ -82,10 +82,11 @@ void main() {
     assert(result.isSuccess);
     expect(result.value.length, 2);
     
-  },skip: 'validation api change');
+  });
+  //,skip: 'validation api change');
 
   test('check diagnostics 3', () {
-    var result = ParserDG.parse(SAMPLE4);
+    var result = DGParser.parse(SAMPLE4);
     List<Object> statements = result.value;
     Uri uri = Uri.parse('untitled:1');
     Sync.newLineTokens[uri] = ((char('\n') | char('\r') & char('\n').optional()) ).token().matchesSkipping(SAMPLE4);

@@ -8,7 +8,7 @@ import 'package:DelugeDartParser/parser.dart';
 import './example/sample1.dart' as sample;
 
 void main() {
-  DelugeParserDefinition dg = DelugeParserDefinition();
+  ParserDefinition dg = ParserDefinition();
 
   group('literal', () {
     test('BigInt', () {

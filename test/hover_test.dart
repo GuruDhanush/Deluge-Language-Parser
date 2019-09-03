@@ -17,7 +17,7 @@ import 'package:path/path.dart' as p;
 import 'example/sample1.dart';
 
 void main() {
-  DelugeParser parser;
+  Parser parser;
   setUp(() {
     parser = DelugeParser();
   });
@@ -103,7 +103,7 @@ void main() {
   });
 
   test('bintoString test', () {
-    var parser = DelugeParserDefinition().build(start: DelugeParserDefinition().binaryExpression).end();
+    var parser = ParserDefinition().build(start: ParserDefinition().binaryExpression).end();
     // var input = """ "Hello" + something() + "Hi" + hi""";
     var input = """ "<div>"  + zoho.url + "Ho&nbsp;<span class='font' style='font-family: \\"times new roman\\", times, serif, sans-serif;'> Heiisds&nbsp;<span class='highlight' style='background-color:#ff66fe'> asasdsadasd</span><span class='highlight' style='background-color:#ffffff'>​&nbsp;</span></span><br></div>" """;
     var result = parser.parse(input);
