@@ -22,11 +22,11 @@ class ParserBenchmark extends BenchmarkBase {
   }
 
   String input;
-  var parser;
+  DelugeParser parser;
 
   void run() {
     Token.newlineParser().token().matchesSkipping(input);
-    parser.parse(input);
+    parser.accept(input);
   }
 
   void setup()  {
