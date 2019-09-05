@@ -1,8 +1,6 @@
 import 'dart:io';
 
-import 'package:DelugeDartParser/lexer.dart';
-import 'package:DelugeDartParser/node.dart';
-import 'package:DelugeDartParser/parser.dart';
+import 'package:DelugeDartParser/parser/parser.dart';
 import 'package:DelugeDartParser/server/util.dart';
 import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:path/path.dart' as path;

@@ -1,14 +1,8 @@
-import 'dart:async';
-
-import 'package:DelugeDartParser/node.dart';
-import 'package:DelugeDartParser/server/messaging/diagnostics.dart';
+import 'package:DelugeDartParser/lsp/messaging/diagnostics.dart';
+import 'package:DelugeDartParser/server/server.dart';
 import 'package:DelugeDartParser/server/validation/validation.dart';
 import 'package:json_rpc_2/json_rpc_2.dart';
-import 'dart:io';
-import 'package:DelugeDartParser/parser.dart';
 import 'package:just_debounce_it/just_debounce_it.dart';
-import 'package:petitparser/petitparser.dart';
-import 'package:tuple/tuple.dart';
 import '../messaging/message.dart';
 import 'package:quiver/collection.dart';
 
@@ -17,46 +11,42 @@ const Duration updateTime = Duration(milliseconds: 250);
 const int maxFiles = 10;
 
 class Sync {
-  static Peer _peer;
-  static LinkedLruHashMap<Uri, List> openFiles = LinkedLruHashMap<Uri, List>(maximumSize: maxFiles);
-  static LinkedLruHashMap<Uri, List> newLineTokens = LinkedLruHashMap<Uri, List>(maximumSize: maxFiles);
+
+  static LinkedLruHashMap<Uri, List> openFiles =
+      LinkedLruHashMap<Uri, List>(maximumSize: maxFiles);
+  static LinkedLruHashMap<Uri, List> newLineTokens =
+      LinkedLruHashMap<Uri, List>(maximumSize: maxFiles);
   static Map documentation = Map();
 
   //TODO: Make the debounce robust
   static parseFile(Uri uri, String data) {
-    
-    //String extraText = """\n a.get();""";
-    //String fullText = data + extraText;
-    var result = DelugeParser().parse(data);
-    if(result.isSuccess) {
-      Message.sendLogMessage(MessageType.info, 'parsed !');
-      openFiles[uri] = result.value;
-      var validations = Validation.Validate(result.value, uri);
-      Message.sendLogMessage(MessageType.info, 'validated successfully');
-      Diagnostics.publishDiagnostics(uri, validations);
-      newLineTokens[uri] = Token.newlineParser().token().matchesSkipping(data);
-      Message.sendLogMessage(MessageType.info, 'newline tokens parsed');
-    }
-    else {
-      Message.sendLogMessage(MessageType.error, 'failed to parse!');
-      openFiles.remove(uri);
+    var parserResult;
+    var parsernewLineTokens;
+
+    try {
+      parserResult = DelugeServer.parseFile(data);
+      parsernewLineTokens = DelugeServer.parseNewLines(data);
+    } on DelugeParserException {
+      Diagnostics.publishParserStatus(false);
+      return;
     }
 
-    Diagnostics.publishParserStatus(result.isSuccess);
+    openFiles[uri] = parserResult;
+    newLineTokens[uri] = parsernewLineTokens;
+    var validations =
+        ValidationServer.validate(parserResult, parsernewLineTokens);
 
+    Diagnostics.publishDiagnostics(uri, validations);
 
-  
+    Diagnostics.publishParserStatus(true);
   }
 
-
-
   static register(Peer peer) {
-    _peer = peer;
 
-    _peer.registerMethod('textDocument/didOpen', onOpenDocument);
-    _peer.registerMethod('textDocument/didChange', onChangeDocument);
-    _peer.registerMethod('textDocument/didSave', onSaveDocument);
-    _peer.registerMethod('textDocument/didClose', onCloseDocument);
+    peer.registerMethod('textDocument/didOpen', onOpenDocument);
+    peer.registerMethod('textDocument/didChange', onChangeDocument);
+    peer.registerMethod('textDocument/didSave', onSaveDocument);
+    peer.registerMethod('textDocument/didClose', onCloseDocument);
   }
 
   static onOpenDocument(params) {
@@ -65,14 +55,16 @@ class Sync {
   }
 
   static onChangeDocument(params) {
-    var changeDoc =  DidChangeTextDocumentParams.fromJsonFull(params);
-    Debounce.duration(updateTime, parseFile, [changeDoc.textDocumentIdentifier.uri,changeDoc.contentChanges.first.text]);
-  
-   }
+    var changeDoc = DidChangeTextDocumentParams.fromJsonFull(params);
+    Debounce.duration(updateTime, parseFile, [
+      changeDoc.textDocumentIdentifier.uri,
+      changeDoc.contentChanges.first.text
+    ]);
+  }
 
   static onSaveDocument(params) {
-    var doc = DidSaveTextDocumentParams.fromJson(params);
-    Message.sendMessageNotif(MessageType.info, 'Saved doc');
+    //var doc = DidSaveTextDocumentParams.fromJson(params);
+    //Message.sendMessageNotif(MessageType.info, 'Saved doc');
   }
 
   static onCloseDocument(params) {
@@ -81,8 +73,6 @@ class Sync {
     //Message.sendMessageNotif(MessageType.info, 'closed doc ${id.uri}');
   }
 }
-
-
 
 class DidSaveTextDocumentParams {
   TextDocumentIdentifier textDocument;
@@ -98,7 +88,7 @@ class TextDocumentIdentifier {
   Uri uri;
   TextDocumentIdentifier({this.uri});
   TextDocumentIdentifier.fromJson(params) : this(uri: params['uri'].asUri);
-  
+
   Map toJson() => {'uri': uri};
 }
 
@@ -120,7 +110,9 @@ class DidChangeTextDocumentParams {
     this.textDocumentIdentifier =
         TextDocumentIdentifier.fromJson(params['textDocument']);
     var contentList = params['contentChanges'].asList;
-    this.contentChanges = [ TextDocumentContentChangeEvent.fromJson(contentList[0]) ];
+    this.contentChanges = [
+      TextDocumentContentChangeEvent.fromJson(contentList[0])
+    ];
   }
 }
 

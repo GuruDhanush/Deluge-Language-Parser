@@ -1,21 +1,14 @@
 import 'dart:io';
 
-import 'package:DelugeDartParser/lexer.dart';
-import 'package:DelugeDartParser/node.dart';
-import 'package:DelugeDartParser/parser.dart';
-import 'package:DelugeDartParser/server/docs/docs.dart';
-import 'package:DelugeDartParser/server/document/sync.dart';
-import 'package:DelugeDartParser/server/language/codelens.dart';
-import 'package:DelugeDartParser/server/language/hover.dart';
-import 'package:DelugeDartParser/server/language/signature.dart';
-import 'package:DelugeDartParser/server/language/symbols.dart';
-import 'package:DelugeDartParser/server/messaging/diagnostics.dart';
-import 'package:DelugeDartParser/server/messaging/message.dart';
-import 'package:DelugeDartParser/server/util.dart';
+import 'package:DelugeDartParser/lsp/language/codelens.dart';
+import 'package:DelugeDartParser/lsp/language/hover.dart';
+import 'package:DelugeDartParser/lsp/language/symbols.dart';
+import 'package:DelugeDartParser/lsp/docs/docs.dart';
+import 'package:DelugeDartParser/lsp/document/sync.dart';
+import 'package:DelugeDartParser/lsp/messaging/diagnostics.dart';
+import 'package:DelugeDartParser/lsp/messaging/message.dart';
 import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
-import 'package:DelugeDartParser/server/stdiochannel.dart';
-import 'package:petitparser/petitparser.dart';
-import 'package:yaml/yaml.dart';
+import 'package:DelugeDartParser/lsp/stdiochannel.dart';
 import 'package:path/path.dart' as path;
 
 json_rpc.Peer peer;

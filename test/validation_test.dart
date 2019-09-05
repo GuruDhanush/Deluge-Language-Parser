@@ -1,8 +1,8 @@
-import 'package:DelugeDartParser/lexer.dart';
-import 'package:DelugeDartParser/node.dart';
-import 'package:DelugeDartParser/parser.dart';
-import 'package:DelugeDartParser/server/document/sync.dart';
-import 'package:DelugeDartParser/server/messaging/diagnostics.dart';
+import 'package:DelugeDartParser/parser/lexer.dart';
+import 'package:DelugeDartParser/parser/node.dart';
+import 'package:DelugeDartParser/parser/parser.dart';
+import 'package:DelugeDartParser/lsp/document/sync.dart';
+import 'package:DelugeDartParser/lsp/messaging/diagnostics.dart';
 import 'package:DelugeDartParser/server/validation/validation.dart';
 import 'package:petitparser/petitparser.dart' as prefix0;
 import 'package:petitparser/petitparser.dart';
@@ -16,13 +16,13 @@ void main() {
     parser = DelugeParser();
   });
 
-  test('normal', () {
-    var input = SAMPLE3;
-    var result = parser.parse(input);
-    List<Object> statements = result.value;
-    var validations = Validation.Validate(statements.cast<Node>(), null);
-    expect(validations.length, isNonZero);
-  },skip: 'validation api change');
+  // test('normal', () {
+  //   var input = SAMPLE3;
+  //   var result = parser.parse(input);
+  //   List<Object> statements = result.value;
+  //   var validations = Validation.Validate(statements.cast<Node>(), null);
+  //   expect(validations.length, isNonZero);
+  // },skip: 'validation api change');
 
   test('check diagnostics', () {
     List<Diagnostic> diagnostics = [
@@ -44,15 +44,15 @@ void main() {
     print(params.toJson());
   });
 
-  test('check diagnostics 2', () {
-    var result = DGParser.parse(SAMPLE3);
-    List<Object> statements = result.value;
-    var validations = Validation.Validate(statements.cast<Node>(), null);
-    var params = PublishDiagnosticsParams(
-        uri: Uri.parse('file:///c%3A/Users/Guru/Desktop/sample.dg'),
-        diagnostics: validations);
-    print(params.toJson());
-  });
+  // test('check diagnostics 2', () {
+  //   var result = DGParser.parse(SAMPLE3);
+  //   List<Object> statements = result.value;
+  //   var validations = Validation.Validate(statements.cast<Node>(), null);
+  //   var params = PublishDiagnosticsParams(
+  //       uri: Uri.parse('file:///c%3A/Users/Guru/Desktop/sample.dg'),
+  //       diagnostics: validations);
+  //   print(params.toJson());
+  // });
 
   test('read diagnostics', () {
     var params = {
@@ -85,14 +85,14 @@ void main() {
   });
   //,skip: 'validation api change');
 
-  test('check diagnostics 3', () {
-    var result = DGParser.parse(SAMPLE4);
-    List<Object> statements = result.value;
-    Uri uri = Uri.parse('untitled:1');
-    Sync.newLineTokens[uri] = ((char('\n') | char('\r') & char('\n').optional()) ).token().matchesSkipping(SAMPLE4);
-    var validations = Validation.Validate(statements.cast<Node>(), uri);
-    expect(validations, isEmpty);
-  }, skip: 'todo');
+  // test('check diagnostics 3', () {
+  //   var result = DGParser.parse(SAMPLE4);
+  //   List<Object> statements = result.value;
+  //   Uri uri = Uri.parse('untitled:1');
+  //   Sync.newLineTokens[uri] = ((char('\n') | char('\r') & char('\n').optional()) ).token().matchesSkipping(SAMPLE4);
+  //   var validations = Validation.Validate(statements.cast<Node>(), uri);
+  //   expect(validations, isEmpty);
+  // }, skip: 'todo');
 
 
 

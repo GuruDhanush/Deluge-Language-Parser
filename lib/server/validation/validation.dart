@@ -1,25 +1,46 @@
-import 'package:DelugeDartParser/node.dart';
-import 'package:DelugeDartParser/server/document/sync.dart';
-import 'package:DelugeDartParser/server/messaging/diagnostics.dart';
+import 'dart:collection';
+
+import 'package:DelugeDartParser/parser/node.dart';
+import 'package:DelugeDartParser/lsp/document/sync.dart';
+import 'package:DelugeDartParser/lsp/messaging/diagnostics.dart';
 import 'package:DelugeDartParser/server/util.dart';
 import 'package:petitparser/petitparser.dart';
 
-class Validation {
-  static List<Diagnostic> Validate(List statements, Uri uri) {
+class ValidationServer {
+  static List<Diagnostic> validate(List statements,
+      [List<Token> newLineTokens]) {
     List<Diagnostic> diagnostics = [];
+    Queue statementQueue = Queue.from(statements);
 
-    for (var statement in statements) {
-      if (statement is LineError) {
-        var syncDocs = Sync.newLineTokens[uri];
-        if (syncDocs == null) {
-          return diagnostics;
+    while (statementQueue.isNotEmpty) {
+      var statement = statementQueue.removeFirst();
+
+      if (statement is ForStatement) {
+        var block = statement.body;
+        if (block is BlockStatement) {
+          statementQueue.addAll(block.body);
         }
-
-        var startLoc = uri != null
-            ? findLine(statement.start, statement.end, syncDocs)
-            : Loc(line: 0, column: 0);
-        //if(startLoc.line == syncDocs.length -1) return diagnostics;
-        if (startLoc == null) continue;
+      } else if (statement is IfStatement) {
+        if (statement.consequent is BlockStatement) {
+          var block = statement.consequent as BlockStatement;
+          statementQueue.addAll(block.body);
+        }
+        var alternate = statement.alternate;
+        if (alternate != null) {
+          while (alternate != null && alternate is IfStatement) {
+            IfStatement ifstmt = alternate as IfStatement;
+            if (ifstmt == null || ifstmt.consequent == null) break;
+            var consequent = ifstmt.consequent as BlockStatement;
+            statementQueue.addAll(consequent.body);
+            alternate = ifstmt.alternate;
+          }
+          if (alternate != null) {
+            statementQueue.addAll((alternate as BlockStatement).body);
+          }
+        }
+      } else if (statement is LineError) {
+        var startLoc =
+            Util.findLine(statement.start, statement.end, newLineTokens);
 
         var diagnostic = Diagnostic(
             code: 'Illegal line',
@@ -31,51 +52,8 @@ class Validation {
                 end: Position(line: startLoc.line, character: statement.end)));
 
         diagnostics.add(diagnostic);
-        //return diagnostics;
-      } else if (statement is IfStatement) {
-        if (statement.consequent is BlockStatement) {
-          var block = statement.consequent as BlockStatement;
-          List<Object> blockstatements = block.body;
-          diagnostics.addAll(Validate(blockstatements, uri));
-        }
-        var alternate = statement.alternate;
-        if (alternate != null) {
-          while (alternate != null && alternate is IfStatement) {
-            IfStatement ifstmt = alternate as IfStatement;
-            if (ifstmt == null || ifstmt.consequent == null) break;
-            var consequent = ifstmt.consequent as BlockStatement;
-            List<Object> consequentstatements = consequent.body;
-            diagnostics.addAll(Validate(consequentstatements, uri));
-
-            alternate = ifstmt.alternate;
-          }
-          if (alternate != null) {
-            var finalBlock = alternate as BlockStatement;
-            List<Object> finalBlockStatements = finalBlock.body;
-            diagnostics.addAll(Validate(finalBlockStatements, uri));
-          }
-        }
-      } else if (statement is ForStatement) {
-        if (statement.body is BlockStatement) {
-          var block = statement.body as BlockStatement;
-          List<Object> blockstatements = block.body;
-          diagnostics.addAll(Validate(blockstatements, uri));
-        }
       }
     }
     return diagnostics;
-  }
-
-  //TODO: use binary search
-  static Loc findLine(int startPos, int endPos, List<Token> tokens) {
-    for (int i = 0; i < tokens.length; i++) {
-      var token = tokens[i];
-      if (token.stop > startPos) {
-        return Loc(
-            line: i, column: startPos - (i == 0 ? 0 : tokens[i - 1].stop));
-      }
-    }
-    //for last line
-    return Loc(line: tokens.length, column: 0);
   }
 }

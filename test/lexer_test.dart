@@ -1,8 +1,8 @@
-import 'package:DelugeDartParser/node.dart';
-import 'package:DelugeDartParser/parser.dart';
+import 'package:DelugeDartParser/parser/node.dart';
+import 'package:DelugeDartParser/parser/parser.dart';
 import 'package:petitparser/petitparser.dart';
 import 'package:test/test.dart';
-import 'package:DelugeDartParser/lexer.dart';
+import 'package:DelugeDartParser/parser/lexer.dart';
 import './example/sample1.dart' as sample;
 
 void main() {

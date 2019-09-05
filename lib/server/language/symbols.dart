@@ -1,133 +1,75 @@
-import 'dart:io';
+import 'dart:collection';
 
-import 'package:DelugeDartParser/node.dart';
-import 'package:DelugeDartParser/server/document/sync.dart';
+import 'package:DelugeDartParser/parser/node.dart';
+import 'package:DelugeDartParser/lsp/document/sync.dart';
+import 'package:DelugeDartParser/lsp/language/symbols.dart';
 import 'package:DelugeDartParser/server/util.dart';
-import 'package:json_rpc_2/json_rpc_2.dart';
-import 'package:petitparser/petitparser.dart';
 
-class SymbolProvider {
-  static register(Peer peer) {
-    peer.registerMethod('textDocument/documentSymbol', onResolve);
-  }
+class SymbolServer {
+  static _treeTraverseSymbols(List statements, List newLineTokens, [Uri uri]) {
+    List<SymbolInformation> symbols = [];
+    Queue statementQueue = Queue.from(statements);
 
-  static List<SymbolInformation> symbols = [];
+    while (statementQueue.isNotEmpty) {
+      var statement = statementQueue.removeFirst();
 
-  static treeTraverseSymbols(Object exp, Uri uri) {
-    if (exp is List) {
-      for (var line in exp) {
-        treeTraverseSymbols(line, uri);
-      }
-    } else if (exp is BlockStatement) {
-      for (var line in exp.body) {
-        treeTraverseSymbols(line, uri);
-      }
-    } else if (exp is ForStatement) {
-      treeTraverseSymbols(exp.index, uri);
-      treeTraverseSymbols(exp.body, uri);
-    } else if (exp is IfStatement) {
-      treeTraverseSymbols(exp.consequent, uri);
-      treeTraverseSymbols(exp.alternate, uri);
-    } else if (exp is ExpressionStatement) {
-      treeTraverseSymbols((exp.expression as List)[0], uri);
-    } else if (exp is AssignmentExpression) {
-      treeTraverseSymbols(exp.left, uri);
-    } else if (exp is Identifier) {
-      var line = findLine(exp.start, exp.end, Sync.newLineTokens[uri]);
-      if (line != null) {
-        symbols.add(SymbolInformation(
-            kind: SymbolKind.Variable,
-            name: exp.name,
-            location: Location(
-                uri: uri,
-                range: Range(
-                    start: Util.toPosition(line),
-                    end: Position(line: line.line, character: line.column + exp.length)))));
+      if (statement is ForStatement) {
+        statementQueue.add(statement.index);
+        var block = statement.body;
+        if (block is BlockStatement) {
+          statementQueue.addAll(block.body);
+        }
+      } else if (statement is IfStatement) {
+        if (statement.consequent is BlockStatement) {
+          var block = statement.consequent as BlockStatement;
+          statementQueue.addAll(block.body);
+        }
+        var alternate = statement.alternate;
+        if (alternate != null) {
+          while (alternate != null && alternate is IfStatement) {
+            IfStatement ifstmt = alternate as IfStatement;
+            if (ifstmt == null || ifstmt.consequent == null) break;
+            var consequent = ifstmt.consequent as BlockStatement;
+            statementQueue.addAll(consequent.body);
+            alternate = ifstmt.alternate;
+          }
+          if (alternate != null) {
+            statementQueue.addAll((alternate as BlockStatement).body);
+          }
+        }
+      } else if (statement is ExpressionStatement) {
+        var expr = statement.expression;
+        if (expr is List && expr.isNotEmpty) {
+          var assignmentExp = expr.first;
+          if (assignmentExp is AssignmentExpression) {
+            var identifier = assignmentExp.left;
+            if (identifier is Identifier) statementQueue.add(identifier);
+          }
+        }
+      } else if (statement is Identifier) {
+        if (statement is Identifier) {
+          var startLoc =
+              Util.findLine(statement.start, statement.end, newLineTokens);
+
+          symbols.add(SymbolInformation(
+              kind: SymbolKind.Variable,
+              name: statement.name,
+              location: Location(
+                  uri: uri,
+                  range: Range(
+                      start: Util.toPosition(startLoc),
+                      end: Position(
+                          line: startLoc.line,
+                          character: startLoc.column + statement.length)))));
+        }
       }
     }
-  }
-  
-  //TODO: use binary search
-  static Loc findLine(int startPos, int endPos, List<Token> tokens) {
-    if(tokens == null) return null;
-    for (int i = 0; i < tokens.length; i++) {
-      var token = tokens[i];
-      if (token.stop > startPos) {
-         return Loc(line: i, column: startPos - (i == 0 ? 0 : tokens[i-1].stop));
-      }
-    }
 
-    return null;
+    return symbols;
   }
 
-  static onResolve(Parameters param) {
-    Uri uri = param['textDocument']['uri'].asUri;
-
-    if (!Sync.openFiles.containsKey(uri)) {
-      return null;
-    }
-
-    var parseResult = Sync.openFiles[uri];
-    symbols = [];
-    treeTraverseSymbols(parseResult, uri);
-
-    return SymbolInformation.toJsonFromList(symbols);
+  static findSymbols(List statements, List newLineTokens, [Uri uri]) {
+    var symbols = _treeTraverseSymbols(statements, newLineTokens, uri);
+    return symbols;
   }
-}
-
-enum SymbolKind {
-  Dummy, //dont use as the symbol kind starts  from file = 1 and dart enum is from 0
-  File,
-  Module,
-  Namespace,
-  Package,
-  Class,
-  Method,
-  Property,
-  Field,
-  Constructor,
-  Enum,
-  Interface,
-  Function,
-  Variable,
-  Constant,
-  String,
-  Number,
-  Boolean,
-  Array,
-  Object,
-  Key,
-  Null,
-  EnumMember,
-  Struct,
-  Event,
-  Operator,
-  TypeParameter,
-}
-
-class SymbolInformation {
-  SymbolInformation({this.name, this.kind, this.location});
-
-  String name;
-  SymbolKind kind;
-  Location location;
-
-  Map toJson() =>
-      {"name": name, "kind": kind.index, "location": location.toJson()};
-
-  static List toJsonFromList(List<SymbolInformation> symbols) {
-    var jsSymbols = [];
-    //TODO: can also use symbols.join, take a look
-    symbols.forEach((symbol) => jsSymbols.add(symbol.toJson()));
-    return jsSymbols;
-  }
-}
-
-class Location {
-  Location({this.range, this.uri});
-
-  Range range;
-  Uri uri;
-
-  Map toJson() => {"range": range.toJson(), "uri": uri.toString()};
 }

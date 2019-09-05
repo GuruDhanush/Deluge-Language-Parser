@@ -1,5 +1,5 @@
-import 'package:DelugeDartParser/lexer.dart';
-import 'package:DelugeDartParser/node.dart';
+import 'lexer.dart';
+import 'node.dart';
 import 'package:petitparser/petitparser.dart';
 
 final DelugeParser DGParser = DelugeParser();

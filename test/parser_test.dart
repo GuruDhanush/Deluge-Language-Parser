@@ -1,10 +1,10 @@
-import 'package:DelugeDartParser/node.dart';
-import 'package:DelugeDartParser/server/document/sync.dart';
+import 'package:DelugeDartParser/parser/node.dart';
+import 'package:DelugeDartParser/lsp/document/sync.dart';
 import 'package:DelugeDartParser/server/validation/validation.dart';
 import 'package:petitparser/debug.dart';
 import 'package:petitparser/petitparser.dart';
 import 'package:test/test.dart';
-import 'package:DelugeDartParser/parser.dart';
+import 'package:DelugeDartParser/parser/parser.dart';
 import './example/sample1.dart' as sample;
 
 void main() {
@@ -595,23 +595,23 @@ void main() {
     });
 
 
-    test('crash if', (){
-      var input = """
-      if(true){
+    // test('crash if', (){
+    //   var input = """
+    //   if(true){
 
-      }else if(false) {
+    //   }else if(false) {
     
-      }else {
+    //   }else {
     
-      }""";
-      var parser = DelugeParser();
-      var result = parser.parse(input);
-      Uri uri = Uri.tryParse('untitled:1');
-      Sync.newLineTokens[uri] = Token.newlineParser().token().matchesSkipping(input);
-      var diag = Validation.Validate(result.value,  uri);
-      expect(diag, isEmpty);
-      assert(result.isSuccess);
-    });
+    //   }""";
+    //   var parser = DelugeParser();
+    //   var result = parser.parse(input);
+    //   Uri uri = Uri.tryParse('untitled:1');
+    //   Sync.newLineTokens[uri] = Token.newlineParser().token().matchesSkipping(input);
+    //   var diag = Validation.Validate(result.value,  uri);
+    //   expect(diag, isEmpty);
+    //   assert(result.isSuccess);
+    // });
 
      test('if pending', () {
       var parser = DelugeParser();
