@@ -23,7 +23,9 @@ jobs:
           /usr/lib/dart/bin/pub run test ./test/all_test.dart --platform vm
         displayName: 'Unit test'
       - script: |
-          rm all_test.dart hover_test.dart validation_test.dart
+          cd test
+          rm all_test.dart test/hover_test.dart validation_test.dart
+          cd ..
           /usr/lib/dart/bin/pub global activate test_coverage  
           /usr/lib/dart/bin/pub global run test_coverage --exclude "test/all_test.dart" --no-badge
           bash <(curl -s https://codecov.io/bash) -t $(CODECOV_TOKEN)
@@ -82,7 +84,7 @@ jobs:
     steps:
       - script: |
           brew tap dart-lang/dart
-          brew install dart@2.5.0
+          brew install dart
           brew info dart
         displayName: 'Install sdk'
       - script: 
