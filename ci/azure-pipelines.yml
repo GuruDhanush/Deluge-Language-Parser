@@ -85,19 +85,19 @@ jobs:
           brew info dart
         displayName: 'Install sdk'
       - script: 
-          /usr/local/Cellar/dart/2.4.1/bin/pub get 
+          /usr/local/Cellar/dart/2.5.0/bin/pub get 
         displayName: 'Pub get'    
       - script: 
-          /usr/local/Cellar/dart/2.4.1/bin/pub run test ./test/all_test.dart --platform vm
+          /usr/local/Cellar/dart/2.5.0/bin/pub run test ./test/all_test.dart --platform vm
         displayName: 'Unit test'
       - script: |
           mkdir dist
-          /usr/local/Cellar/dart/2.4.1/bin/dart2aot ./bin/main.dart ./dist/main.dart.aot
+          /usr/local/Cellar/dart/2.5.0/bin/dart2aot ./bin/main.dart ./dist/main.dart.aot
         displayName: 'build files'
       - task: CopyFiles@1 
         inputs:
           TargetFolder: './dist'
-          SourceFolder: '/usr/local/Cellar/dart/2.4.1/libexec/bin/'
+          SourceFolder: '/usr/local/Cellar/dart/2.5.0/libexec/bin/'
           Contents: 'dartaotruntime' 
         displayName: 'copy aot'
       - task: PublishBuildArtifacts@1
