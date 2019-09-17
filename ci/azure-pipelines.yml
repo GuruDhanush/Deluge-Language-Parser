@@ -24,7 +24,7 @@ jobs:
         displayName: 'Unit test'
       - script: |
           cd test
-          rm all_test.dart test/hover_test.dart validation_test.dart
+          rm all_test.dart hover_test.dart validation_test.dart
           cd ..
           /usr/lib/dart/bin/pub global activate test_coverage  
           /usr/lib/dart/bin/pub global run test_coverage --exclude "test/all_test.dart" --no-badge
