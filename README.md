@@ -2,6 +2,7 @@
 
 
 [![Build Status](https://dev.azure.com/guruzoho/Zoho/_apis/build/status/GuruDhanush.Deluge-Language-Parser?branchName=master)](https://dev.azure.com/guruzoho/Zoho/_build/latest?definitionId=3&branchName=master "Build Status")
+[![codecov](https://codecov.io/gh/GuruDhanush/Deluge-Language-Parser/branch/master/graph/badge.svg)](https://codecov.io/gh/GuruDhanush/Deluge-Language-Parser)
 ![GitHub Releases](https://img.shields.io/github/downloads/GuruDhanush/Deluge-Language-Parser/latest/total)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/GuruDhanush/Deluge-Language-Parser)
 
