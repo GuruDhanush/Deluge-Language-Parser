@@ -2,7 +2,8 @@
 
 
 [![Build Status](https://dev.azure.com/guruzoho/Zoho/_apis/build/status/GuruDhanush.Deluge-Language-Parser?branchName=master)](https://dev.azure.com/guruzoho/Zoho/_build/latest?definitionId=3&branchName=master "Build Status")
-
+![GitHub Releases](https://img.shields.io/github/downloads/GuruDhanush/Deluge-Language-Parser/latest/total)
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/GuruDhanush/Deluge-Language-Parser)
 
 Created using parser combinators in dart. More info about deluge can be found [here](https://www.zoho.com/creator/newhelp/script/deluge-overview.html "Deluge"). The package aims to parse cliq compatible deluge  according to the externally available documentation. 
 
