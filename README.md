@@ -54,6 +54,14 @@ Direction: Server -> Client.
 
 Params: `{ "status": true|false }`
 
+## Custom methods
+
+### custom/updateDocsLocation
+
+Direction: Client -> Server.
+
+Params: `{ "folder": string, "fileName": string }`
+
 
 ## Compiling for web
 

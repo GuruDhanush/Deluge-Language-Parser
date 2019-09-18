@@ -27,7 +27,7 @@ main(List<String> arguments) {
   SymbolProvider.register(peer);
   CodeLensProvider.register(peer);
   //SignatureProvider.register(peer);
-  Docs.fetchDocs();
+  Docs.register(peer);
   
 
   peer

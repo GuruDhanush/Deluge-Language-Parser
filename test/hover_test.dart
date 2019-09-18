@@ -123,11 +123,11 @@ void main() {
     expect(docs, isNotEmpty);
   });
 
-  test('search doc', () async {
-    await Docs.fetchDocs();
-    var putDoc = Docs.searchDoc('trim');
-    expect(putDoc, isNotEmpty);
-  });
+  // test('search doc', () async {
+  //   await Docs.fetchDocs();
+  //   var putDoc = Docs.searchDoc('trim');
+  //   expect(putDoc, isNotEmpty);
+  // });
 
   test('new line token test', () {
 
