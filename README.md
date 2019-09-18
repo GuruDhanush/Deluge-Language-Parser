@@ -16,11 +16,12 @@ The code is packaged to aot and is released for all three platform Window, Linux
 
 ## Benchmark
 
-Deluge code from the [extension samples](https://www.zoho.com/cliq/help/platform/code-samples.html "Cliq code samples") was taken and packaged as one file with 55KB size and 1923 LOC. Benchmark ran on i7 7500U @2.7GHZ
+Deluge code from the [extension samples](https://www.zoho.com/cliq/help/platform/code-samples.html "Cliq code samples") was taken and packaged as one file with 55KB size and 1923 LOC. Benchmark ran on i7 7500U @2.7GHZ using dart sdk [2.6.0.1-dev-0](https://storage.googleapis.com/dart-archive/channels/dev/release/2.6.0-dev.1.0/sdk/dartsdk-windows-x64-release.zip) on windows 10 build 18363.356 . 
 
 | aot   | jit |
 |------ | ------|
-| 588ms | 436ms | 
+| 290ms | 242ms | 
+
 
 
 Incremental compilation is yet to be implemented. In the mean time some parse requests are debounced. 

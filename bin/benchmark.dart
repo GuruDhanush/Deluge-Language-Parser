@@ -23,12 +23,12 @@ class ParserBenchmark extends BenchmarkBase {
   DelugeParser parser;
 
   void run() {
-    Token.newlineParser().token().matchesSkipping(input);
+    // Token.newlineParser().token().matchesSkipping(input);
     parser.accept(input);
   }
 
   void setup()  {
-    input = File(path.join(Util.homeDir(), 'deluge-vscode', 'benchmark1.dg') ).readAsStringSync();
+    input = File(path.join(Util.homeDir(), 'Desktop', 'benchmark1.dg') ).readAsStringSync();
     parser = DelugeParser();
   }
 
