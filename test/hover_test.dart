@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:DelugeDartParser/lsp/language/hover.dart';
 import 'package:DelugeDartParser/parser/node.dart';
 import 'package:DelugeDartParser/parser/parser.dart';
 import 'package:DelugeDartParser/lsp/docs/docs.dart';
@@ -10,215 +11,79 @@ import 'package:DelugeDartParser/server/language/hover.dart';
 import 'package:DelugeDartParser/server/server.dart';
 import 'package:DelugeDartParser/server/util.dart';
 import 'package:DelugeDartParser/server/validation/validation.dart';
+import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
 import 'package:petitparser/petitparser.dart';
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
-import 'package:path/path.dart' as p;
+import 'package:path/path.dart' as path;
 import 'package:DelugeDartParser/server/language/symbols.dart';
 
 import 'example/sample1.dart';
 
 void main() {
-  Parser parser;
-  setUp(() {
-    parser = DelugeParser();
+
+
+  group('a = 1 identifier', () {
+    var statements;
+    var newLineTokens;
+    final uri = Uri.parse('file://1');
+    var parameters;
+
+    setUp((){
+      var input = """
+      a = 1;
+      """;
+      statements = DelugeParser().parse(input).value;
+      newLineTokens = Token.newlineParser().token().matchesSkipping(input);
+      Sync.openFiles[uri] = statements;
+      Sync.newLineTokens[uri] = newLineTokens;
+      parameters = json_rpc.Parameters("textDocument/hover", {
+        "textDocument": {
+          "uri": uri.toString()
+        },
+        "position": {
+          "line": 0,
+          "character": 6
+        }
+      });
+    });
+
+    test('server', () {
+      var result = HoverServer.onHover(6, statements);
+      expect(result, isNull);
+    });
+
+
+    test('lsp', () async {
+      expect(await HoverProvider.onHover(parameters), isNull);
+    });
+
+    test('lsp with no newLineTokens', () async {
+      Sync.newLineTokens.remove(uri);
+      var result = await HoverProvider.onHover(parameters);
+      expect(result, isEmpty);
+    });
+
+    test('lsp with no statements', () async {
+      Sync.openFiles.remove(uri);
+      var result = await HoverProvider.onHover(parameters);
+      expect(result, isEmpty);
+    });
+
   });
 
-  test('simple parse', () {
-    var input = SAMPLE3;
-    var result = parser.parse(input);
-    var exp = result.value;
-    var pos = Loc(line: 1, column: 4);
 
-    var node;
-    int first = 0;
-    int last = exp.length - 1;
-    while (first <= last) {
-      int middle = (first + (last - 1) / 2).toInt();
-
-      var location = exp[middle].isInside(pos);
-      if (location == 0) {
-        node = exp[middle];
-      } else if (location < 0) {
-        first = middle + 1;
-      } else {
-        last = middle - 1;
-      }
-    }
-
-    print(node);
-  }, skip: 'not used');
-
-  test('identifier = datatype', () {
-    var input = "word = 1234;";
-    var result = parser.parse(input);
-    var exp = ((result.value[0] as ExpressionStatement).expression as List)[0];
-    var assExp = exp as AssignmentExpression;
-    assert(result.isSuccess);
-  });
-
-  test('identifier = method', () {
-    var input = "word = resp.get(1,2);";
-    var result = parser.parse(input);
-
-    var exp = ((result.value[0] as ExpressionStatement).expression as List)[0];
-    var assExp = exp as AssignmentExpression;
-    assert(result.isSuccess);
-  });
-
-  test('multiple lines', () {
-    var input = """
-    a = resp.get(1);
-    resp.put(1, "Hello");
-    // hi
-    """;
-    var result = parser.parse(input);
-
-    assert(result.isSuccess);
-  });
-
-  test('tree traverse', () {
-    var result = parser.parse(SAMPLE3);
-    var testPos = Loc(line: 5, column: 14);
-    //var hoverResult = HoverProvider.treeTraverse(testPos, result.value);
-    //expect(hoverResult, isNotNull);
-  });
-
-  test('load yaml file', () async {
-    // YamlMap doc = loadYaml(
-    //     (await File('./lib/docs/datatypes/string.yaml').readAsString()));
-    // print(doc['examples']);
-
-    //print(Directory.current. );
-
-    String homePath;
-    if(Platform.isWindows) {
-      homePath = Platform.environment['USERPROFILE'];
-    }
-    else {
-      homePath = Platform.environment[''];
-    }
-
-    var s = Platform.environment['USERPROFILE'];
-    print(s);
-    
-  });
-
-  // test('bintoString test', () {
-  //   var parser = ParserDefinition().build(start: ParserDefinition().binaryExpression).end();
-  //   // var input = """ "Hello" + something() + "Hi" + hi""";
-  //   var input = """ "<div>"  + zoho.url + "Ho&nbsp;<span class='font' style='font-family: \\"times new roman\\", times, serif, sans-serif;'> Heiisds&nbsp;<span class='highlight' style='background-color:#ff66fe'> asasdsadasd</span><span class='highlight' style='background-color:#ffffff'>​&nbsp;</span></span><br></div>" """;
-  //   var result = parser.parse(input);
-  //   assert(result.isSuccess);
-
-  //   String data = CodeLensProvider.ConvertBinaryToString(result.value);
-  //   expect(data, isNotEmpty);
-
-    
-  // });
 
   test('load doc', () async {
-    var docFile = File(p.join(Util.homeDir(), 'deluge-vscode', 'docs.json'));
+    var docFile = File(path.join("c:\\Users\\Guru\\AppData\\Roaming\\Code - Insiders\\User\\globalStorage\\gdp.delugelang\\v0.05-alpha", "docs.json"));
     var docs = (json.decode(await docFile.readAsString()) as Map)['functions'];
     expect(docs, isNotEmpty);
-  });
+  }, skip: 'only on installed extensions');
 
-  // test('search doc', () async {
-  //   await Docs.fetchDocs();
-  //   var putDoc = Docs.searchDoc('trim');
-  //   expect(putDoc, isNotEmpty);
-  // });
-
-  test('new line token test', () {
-
-    var input = """ 
-    Hello
-    Hi
-    Bye
-    """;
-    var result = Token.newlineParser().token().matchesSkipping(input);
-    assert(result.isNotEmpty);
-    
-  });
-
-
-  test('find pos test', () {
-
-    var input = """
-    Hello = 1;
-    World = 2;
-    Bye = 3;
-    """;
-    var result = parser.parse(input);
-    var loc = Loc(line: 2, column: 3);
-    var newLineTokens =  ((char('\n') | char('\r') & char('\n').optional()) ).token().matchesSkipping(input);
-    var line = newLineTokens[loc.line-2];
-    var pos = line.stop + loc.column;
-
-
-    
-  });
-
-
-  test('last line error', (){
-
-
-    var input =  """
-    a = 1;
-    a""";
-    var extra = """\n//""";
-    var result = parser.parse(input + extra);
-    assert(result.isSuccess);
-  });
-
-
-  // test('hover ignorecase', () {
-  //   var input = """
-  //   if(targetName.equalsIgnoreCase("portals"))
-  //   {
-
-  //   }""";
-  //   Uri uri = Uri.parse('title:1');
-  //   //Sync.newLineTokens[uri] = ((char('\n') | char('\r') & char('\n').optional()) ).token().matchesSkipping(input);
-  //   var result = parser.parse(input);
-  //   Sync.openFiles[uri] = result.value;
-  //   var pos = ((((result.value[0] as IfStatement).test as CallExpression).callee as MemberExpression).propery as Identifier).start + 3;
-  //   var hover = HoverProvider._treeTraverse(pos, result.value);
-  //   assert(result.isSuccess);
-
-    
-  // });
-
-  // test('crash linux', () {
-  //   var input = """
-  //   a;
-  //   a -1""";  
-
-
-  //   Uri uri = Uri.parse('title:1');
-  //   Sync.newLineTokens[uri] = ((char('\n') | char('\r') & char('\n').optional()) ).token().matchesSkipping(input);
-  //   var result = parser.parse(input);
-  //   Sync.openFiles[uri] = result.value;
-  //   var l = Validation.Validate(result.value, uri);
-  //   CodeLensProvider.treeTraversalCodeLens(result.value, uri);
-  //   var lens = CodeLensProvider.codeLens;
-  //   assert(result.isSuccess);
-  // });
-
-
-   test('sample test 3', () {
-
-     var text = """a = sendsms [
-        to: 1234
-        message: "hello"
-      ];
-     """;
-
-    var statements = DelugeServer.parseFile(text);
-    var newLines = DelugeServer.parseNewLines(text);
-    var symbols = CodeLensServer.treeTraversalCodeLens(statements, newLines);
-    expect(symbols, isNotEmpty);
-  });
-
+  test('search doc', () async {
+    await Docs.fetchDocs(path.join("c:\\Users\\Guru\\AppData\\Roaming\\Code - Insiders\\User\\globalStorage\\gdp.delugelang\\v0.05-alpha", "docs.json"));
+    var putDoc = Docs.searchDoc('trim');
+    expect(putDoc, isNotEmpty);
+  }, skip: 'only on installed extensions');
 
 }

@@ -13,7 +13,7 @@ class SymbolProvider {
     peer.registerMethod('textDocument/documentSymbol', onResolve);
   }
 
-  static onResolve(Parameters param) {
+  static List onResolve(Parameters param) {
     Uri uri = param['textDocument']['uri'].asUri;
 
     //TODO: Throw an error request
@@ -36,7 +36,6 @@ class SymbolProvider {
 }
 
 enum SymbolKind {
-  Dummy, //dont use as the symbol kind starts  from file = 1 and dart enum is from 0
   File,
   Module,
   Namespace,
@@ -73,7 +72,7 @@ class SymbolInformation {
   Location location;
 
   Map toJson() =>
-      {"name": name, "kind": kind.index, "location": location.toJson()};
+      {"name": name, "kind": kind.index + 1, "location": location.toJson()};
 
   static List toJsonFromList(List<SymbolInformation> symbols) {
     var jsSymbols = [];

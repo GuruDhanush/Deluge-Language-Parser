@@ -4,96 +4,145 @@ import 'package:DelugeDartParser/parser/parser.dart';
 import 'package:DelugeDartParser/lsp/document/sync.dart';
 import 'package:DelugeDartParser/lsp/messaging/diagnostics.dart';
 import 'package:DelugeDartParser/server/validation/validation.dart';
-import 'package:petitparser/petitparser.dart' as prefix0;
+import 'package:DelugeDartParser/web/server.dart';
+import 'package:petitparser/debug.dart';
 import 'package:petitparser/petitparser.dart';
+import 'package:petitparser/reflection.dart';
 import 'package:test/test.dart';
 
 import 'example/sample1.dart';
 
 void main() {
   Parser parser;
+  Parser newLineParser;
   setUp(() {
     parser = DelugeParser();
+    newLineParser = Token.newlineParser().token();
   });
 
-  // test('normal', () {
-  //   var input = SAMPLE3;
-  //   var result = parser.parse(input);
-  //   List<Object> statements = result.value;
-  //   var validations = Validation.Validate(statements.cast<Node>(), null);
-  //   expect(validations.length, isNonZero);
-  // },skip: 'validation api change');
-
-  test('check diagnostics', () {
-    List<Diagnostic> diagnostics = [
-      Diagnostic(
-          code: 'code',
-          message: 'message',
-          range: Range(
-            start: Position(line: 1, character: 1),
-            end: Position(line: 1, character: 4),
-          ),
-          severity: DiagnosticSeverity.error,
-          source: "Deluge Language Server")
-    ];
-
-    var params = PublishDiagnosticsParams(
-        uri: Uri.parse('file:///c%3A/Users/Guru/Desktop/sample.dg'),
-        diagnostics: diagnostics);
-
-    print(params.toJson());
-  });
-
-  // test('check diagnostics 2', () {
-  //   var result = DGParser.parse(SAMPLE3);
-  //   List<Object> statements = result.value;
-  //   var validations = Validation.Validate(statements.cast<Node>(), null);
-  //   var params = PublishDiagnosticsParams(
-  //       uri: Uri.parse('file:///c%3A/Users/Guru/Desktop/sample.dg'),
-  //       diagnostics: validations);
-  //   print(params.toJson());
-  // });
-
-  test('read diagnostics', () {
-    var params = {
-      "textDocument": {
-        "uri": "file:///c%3A/Users/Guru/Desktop/sample.dg",
-        "version": 3
-      },
-      "contentChanges": [
-        {
-          "text":
-              "response  Map();\r\n \r\nres = Collection();\r\nresponse.put(\"bot\",{\"name\":\"OneDrive\"});\r\nif(arguments.trim().length()  <= 0 && selections.size() <= 0)\r\n{\r\n\tresponse.put(\"text\",\"Please enter a file name to look for in OneDrive.\");\r\n\treturn response; \r\n}"
-        }
-      ]
-    };
-    var result = DidChangeTextDocumentParams.fromJsonFull(params);
-  },skip: 'validation api change');
-
-  test('repeated errors', () {
-    //var parser = DgGrammarDef().build(start: DgGrammarDef().whitespaceLine) & prefix0.string('a');
+  test('for inner error', () {
     var input = """
-    a = 1;
-    a;
+    for each i in list {
+      a;
+    }
+    """;
+    var statements = parser.parse(input).value;
+    var newLineTokens = newLineParser.matchesSkipping(input);
+    var diag = ValidationServer.validate(statements, newLineTokens);
 
-
-    //""";
-    var result = parser.parse(input);
-    assert(result.isSuccess);
-    expect(result.value.length, 3);
-    
+    expect(diag.length, 1);
   });
-  //,skip: 'validation api change');
 
-  // test('check diagnostics 3', () {
-  //   var result = DGParser.parse(SAMPLE4);
-  //   List<Object> statements = result.value;
-  //   Uri uri = Uri.parse('untitled:1');
-  //   Sync.newLineTokens[uri] = ((char('\n') | char('\r') & char('\n').optional()) ).token().matchesSkipping(SAMPLE4);
-  //   var validations = Validation.Validate(statements.cast<Node>(), uri);
-  //   expect(validations, isEmpty);
-  // }, skip: 'todo');
+  test('for test error', () {
+    var input = """
+    for each i in list 
+      a;
+    }
+    """;
+    var result = parser.parse(input);
+    assert(result.isFailure);
+  });
 
+  test('if inner error', () {
+    var input = """
+    if(true) {
+      a;
+    }
+    """;
+    var statements = parser.parse(input).value;
+    var newLineTokens = newLineParser.matchesSkipping(input);
+    var diag = ValidationServer.validate(statements, newLineTokens);
 
+    expect(diag.length, 1);
+  });
 
+  test('if test error', () {
+    var input = """
+    if(a) 
+      a = 1;
+    }
+    """;
+    var result = parser.parse(input);
+    assert(result.isFailure);
+  });
+
+  group('no semicolon all', () {
+    final input = "a = 1";
+    final uri = Uri.parse('file://1');
+    var statements;
+    var newLineTokens;
+
+    setUp(() {
+      statements = DelugeParser().parse(input).value;
+      newLineTokens = Token.newlineParser().token().matchesSkipping(input);
+    });
+
+    test('server', () {
+      var diag = ValidationServer.validate(statements, newLineTokens);
+
+      expect(diag.length, 1);
+      var range = diag.first.range;
+      expect(range.end.character - range.start.character, 5);
+    });
+
+    test('web', () {
+      var server = WebServer();
+      server.newLineTokens = newLineTokens;
+      server.statements = statements;
+
+      var results = server.computeDiagnostics();
+
+      expect(results.length, 1);
+      expect(
+          results.first,
+          equals({
+            'startLineNumber': 1,
+            'startColumn': 1,
+            'endLineNumber': 1,
+            'endColumn': 6,
+            'message': "Illegal line",
+            'severity': 8
+          }));
+    });
+  });
+
+  test('continuation parser', () {
+    var input = "[1a3,2]";
+    //var parser = char('[') & digit().plus().separatedBy(char(','), includeSeparators: false) & char(']');
+    // var parser = (char('[') & digit() & char(',') & digit() & char(']')) |
+    // char('{') & digit() & char(',') & digit() & char('}') ;
+    var parser =
+        ParserDefinition().build(start: ParserDefinition().listExpression);
+    var level = 0;
+    var modParser = transformParser(parser, (each) {
+      if (each is ActionParser) {
+        print(1);
+      }
+      return ContinuationParser(each, (continuation, context) {
+        print('${'  ' * level}$each');
+        level++;
+        final result = continuation(context);
+        level--;
+        if (result.isFailure && result.message.contains('","')) {
+          var modResult =
+              (noneOf(',').plus() & char(',')).flatten().parseOn(context);
+          print('${'  ' * level} --our  $modResult');
+          if (modResult.isSuccess) {
+            return modResult;
+          }
+        }
+        if (false &&
+            result is Failure &&
+            each is! TrimmingParser &&
+            each is CharacterParser &&
+            each.predicate is! WhitespaceCharPredicate) {
+          print('$level, ${result.message}');
+        }
+        print('${'  ' * level}$result');
+        return result;
+      });
+    });
+    var result = modParser.parse(input);
+    assert(result.isSuccess);
+  }, skip: 'testing on new implementations, ignore');
 }

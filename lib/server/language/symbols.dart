@@ -6,7 +6,7 @@ import 'package:DelugeDartParser/lsp/language/symbols.dart';
 import 'package:DelugeDartParser/server/util.dart';
 
 class SymbolServer {
-  static _treeTraverseSymbols(List statements, List newLineTokens, [Uri uri]) {
+  static List<SymbolInformation> _treeTraverseSymbols(List statements, List newLineTokens, [Uri uri]) {
     List<SymbolInformation> symbols = [];
     Queue statementQueue = Queue.from(statements);
 
@@ -68,7 +68,7 @@ class SymbolServer {
     return symbols;
   }
 
-  static findSymbols(List statements, List newLineTokens, [Uri uri]) {
+  static List<SymbolInformation> findSymbols(List statements, List newLineTokens, [Uri uri]) {
     var symbols = _treeTraverseSymbols(statements, newLineTokens, uri);
     return symbols;
   }
